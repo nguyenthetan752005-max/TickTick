@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"><!-- 1. Nhóm cố định trên cùng -->
+    <group android:id="@+id/main_group_fixed" android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_today"
+            android:icon="@android:drawable/ic_menu_today"
+            android:title="Hôm nay" />
+        <item
+            android:id="@+id/nav_next_7_days"
+            android:icon="@android:drawable/ic_menu_month"
+            android:title="7 ngày kế tiếp" />
+        <item
+            android:id="@+id/nav_inbox"
+            android:icon="@android:drawable/stat_notify_chat"
+            android:title="Hộp thư đến" />
+    </group>
+
+    <!-- 2. Nhóm Lists (Dòng này cực kỳ quan trọng) -->
+    <item android:id="@+id/nav_lists_header" android:title="Lists">
+        <menu>
+            <!-- ĐƯA GROUP NÀY LÊN ĐẦU: Các mục từ Database sẽ hiện ở ĐÂY -->
+            <group android:id="@+id/main_group_lists" />
+
+            <!-- Các mục mặc định hiện ở phía dưới -->
+<!--            <item android:id="@+id/nav_personal" android:icon="@android:drawable/ic_menu_myplaces" android:title="Personal" />-->
+<!--            <item android:id="@+id/nav_work" android:icon="@android:drawable/ic_menu_gallery" android:title="Work" />-->
+<!--            <item android:id="@+id/nav_shopping" android:icon="@android:drawable/ic_menu_save" android:title="Shopping" />-->
+<!--            <item android:id="@+id/nav_learning" android:icon="@android:drawable/ic_menu_agenda" android:title="Learning" />-->
+<!--            <item android:id="@+id/nav_fitness" android:icon="@android:drawable/ic_menu_directions" android:title="Fitness" />-->
+<!--            <item android:id="@+id/nav_wishlist" android:icon="@android:drawable/ic_menu_camera" android:title="Wish List" />-->
+        </menu>
+    </item>
+
+    <!-- 3. Nút Thêm: Đặt ở cuối cùng của file XML để nó luôn nằm dưới đáy -->
+    <group android:id="@+id/main_group_add">
+        <item
+            android:id="@+id/nav_add_list"
+            android:icon="@android:drawable/ic_input_add"
+            android:title="Thêm" />
+    </group>
+
+</menu>

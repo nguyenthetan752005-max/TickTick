@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/bottomNavigationContainer"
+    android:layout_width="match_parent"
+    android:layout_height="60dp"
+    android:background="@color/black"
+    android:gravity="center"
+    android:orientation="horizontal"
+    android:paddingHorizontal="24dp">
+
+    <ImageView
+        android:id="@+id/ivNavTasks"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_weight="1"
+        android:src="@android:drawable/checkbox_on_background"
+        app:tint="@color/blue_primary" />
+
+    <ImageView
+        android:id="@+id/ivNavCalendar"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_weight="1"
+        android:src="@android:drawable/ic_menu_today"
+        app:tint="@color/text_secondary" />
+
+    <ImageView
+        android:id="@+id/ivNavSettings"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_weight="1"
+        android:src="@android:drawable/ic_menu_manage"
+        app:tint="@color/text_secondary" />
+
+</LinearLayout>

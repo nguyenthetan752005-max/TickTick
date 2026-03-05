@@ -1,0 +1,31 @@
+package hcmute.edu.vn.nguyenthetan.database;
+
+import android.content.Context;
+import androidx.room.Database;
+import androidx.room.Room;
+import androidx.room.RoomDatabase;
+
+import hcmute.edu.vn.nguyenthetan.model.Category;
+import hcmute.edu.vn.nguyenthetan.model.Task;
+import hcmute.edu.vn.nguyenthetan.model.dao.CategoryDao;
+import hcmute.edu.vn.nguyenthetan.model.dao.TaskDao;
+
+@Database(entities = {Category.class, Task.class}, version = 2) // Thêm Task.class và tăng version lên 2
+public abstract class AppDatabase extends RoomDatabase {
+
+    private static AppDatabase instance;
+
+    public abstract CategoryDao categoryDao();
+    public abstract TaskDao taskDao(); // Thêm TaskDao
+
+    public static synchronized AppDatabase getInstance(Context context) {
+        if (instance == null) {
+            instance = Room.databaseBuilder(context.getApplicationContext(),
+                            AppDatabase.class, "ticktick_database")
+                    .fallbackToDestructiveMigration()
+                    .allowMainThreadQueries()
+                    .build();
+        }
+        return instance;
+    }
+}
