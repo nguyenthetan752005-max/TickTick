@@ -10,13 +10,13 @@ import hcmute.edu.vn.nguyenthetan.model.Task;
 import hcmute.edu.vn.nguyenthetan.model.dao.CategoryDao;
 import hcmute.edu.vn.nguyenthetan.model.dao.TaskDao;
 
-@Database(entities = {Category.class, Task.class}, version = 2) // Thêm Task.class và tăng version lên 2
+@Database(entities = {Category.class, Task.class}, version = 3) // Tăng lên phiên bản 3
 public abstract class AppDatabase extends RoomDatabase {
 
     private static AppDatabase instance;
 
     public abstract CategoryDao categoryDao();
-    public abstract TaskDao taskDao(); // Thêm TaskDao
+    public abstract TaskDao taskDao();
 
     public static synchronized AppDatabase getInstance(Context context) {
         if (instance == null) {

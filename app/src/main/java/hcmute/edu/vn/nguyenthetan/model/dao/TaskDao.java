@@ -19,11 +19,18 @@ public interface TaskDao {
     @Delete
     void delete(Task task);
 
-    // Lấy toàn bộ task
-    @Query("SELECT * FROM tasks ORDER BY id DESC")
+    @Delete
+    void deleteMultiple(List<Task> tasks);
+
+    @Query("SELECT * FROM tasks WHERE isCompleted = 0 ORDER BY id DESC")
     List<Task> getAllTasks();
 
-    // QUAN TRỌNG: Lấy danh sách Task thuộc về một Category cụ thể
-    @Query("SELECT * FROM tasks WHERE categoryId = :catId ORDER BY id DESC")
+    @Query("SELECT * FROM tasks WHERE categoryId = :catId AND isCompleted = 0 ORDER BY id DESC")
     List<Task> getTasksByCategoryId(int catId);
+
+    @Query("SELECT * FROM tasks WHERE dueDate >= :start AND dueDate <= :end AND isCompleted = 0 ORDER BY dueDate ASC")
+    List<Task> getTasksByDateRange(long start, long end);
+
+    @Query("SELECT * FROM tasks WHERE isCompleted = 1 ORDER BY id DESC")
+    List<Task> getCompletedTasks();
 }

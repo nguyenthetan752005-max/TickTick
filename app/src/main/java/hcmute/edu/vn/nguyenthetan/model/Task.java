@@ -18,13 +18,15 @@ public class Task {
     private String name;
     private String description;
     private int categoryId;
-    private long dueDate; // Thuộc tính mới: Ngày hết hạn (dạng timestamp)
+    private long dueDate;
+    private boolean isCompleted; // Thuộc tính mới: Trạng thái hoàn thành
 
     public Task(String name, String description, int categoryId, long dueDate) {
         this.name = name;
         this.description = description;
         this.categoryId = categoryId;
         this.dueDate = dueDate;
+        this.isCompleted = false; // Mặc định là chưa hoàn thành
     }
 
     // Getter và Setter
@@ -38,4 +40,6 @@ public class Task {
     public void setCategoryId(int categoryId) { this.categoryId = categoryId; }
     public long getDueDate() { return dueDate; }
     public void setDueDate(long dueDate) { this.dueDate = dueDate; }
+    public boolean isCompleted() { return isCompleted; }
+    public void setCompleted(boolean completed) { isCompleted = completed; }
 }

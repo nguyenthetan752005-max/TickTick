@@ -38,9 +38,11 @@ dependencies {
     implementation(libs.material)
     implementation(libs.activity)
     implementation(libs.constraintlayout)
+    implementation(libs.androidx.core.splashscreen)
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
     implementation(libs.androidx.room.runtime)
+    implementation("androidx.core:core-splashscreen:1.0.1")
     annotationProcessor(libs.androidx.room.compiler)
 }
