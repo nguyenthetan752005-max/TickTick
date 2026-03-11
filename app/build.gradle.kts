@@ -4,14 +4,12 @@ plugins {
 
 android {
     namespace = "hcmute.edu.vn.nguyenthetan"
-    compileSdk {
-        version = release(36)
-    }
+    compileSdk = 36 // Đã nâng cấp để hỗ trợ các thư viện mới nhất
 
     defaultConfig {
         applicationId = "hcmute.edu.vn.nguyenthetan"
         minSdk = 24
-        targetSdk = 36
+        targetSdk = 36 // Đồng bộ với compileSdk
         versionCode = 1
         versionName = "1.0"
 
@@ -39,10 +37,14 @@ dependencies {
     implementation(libs.activity)
     implementation(libs.constraintlayout)
     implementation(libs.androidx.core.splashscreen)
+    
+    // ViewModel & LiveData
+    implementation("androidx.lifecycle:lifecycle-viewmodel:2.8.7")
+    implementation("androidx.lifecycle:lifecycle-livedata:2.8.7")
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
     implementation(libs.androidx.room.runtime)
-    implementation("androidx.core:core-splashscreen:1.0.1")
     annotationProcessor(libs.androidx.room.compiler)
 }

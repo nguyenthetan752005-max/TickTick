@@ -17,7 +17,7 @@ import hcmute.edu.vn.nguyenthetan.model.Task;
 
 public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder> {
 
-    private List<Task> taskList;
+    private List<Task> taskList = new ArrayList<>();
     private OnTaskClickListener listener;
     private List<Task> selectedTasks = new ArrayList<>();
     private boolean isMultiSelectMode = false;
@@ -31,12 +31,18 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
     }
 
     public TaskAdapter(List<Task> taskList, OnTaskClickListener listener) {
-        this.taskList = taskList;
+        if (taskList != null) {
+            this.taskList = new ArrayList<>(taskList);
+        }
         this.listener = listener;
     }
 
     public void setData(List<Task> tasks) {
-        this.taskList = tasks;
+        if (tasks == null) {
+            this.taskList = new ArrayList<>();
+        } else {
+            this.taskList = new ArrayList<>(tasks);
+        }
         notifyDataSetChanged();
     }
 
@@ -44,7 +50,7 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
         this.canToggleComplete = canToggle;
     }
 
-    public List<Task> getSelectedTasks() { return selectedTasks; }
+    public List<Task> getSelectedTasks() { return new ArrayList<>(selectedTasks); }
     
     public void clearSelection() {
         selectedTasks.clear();
@@ -74,7 +80,6 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
         holder.tvDate.setText(sdf.format(new Date(task.getDueDate())));
 
-        // Ẩn ô checkbox nếu task đã hoàn thành, hiện nếu chưa
         if (task.isCompleted()) {
             holder.ivCheckbox.setVisibility(View.GONE);
         } else {
@@ -82,7 +87,6 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
             holder.ivCheckbox.setImageResource(android.R.drawable.checkbox_off_background);
         }
 
-        // Hiển thị trạng thái được chọn (Multi-select)
         holder.ivSelected.setVisibility(selectedTasks.contains(task) ? View.VISIBLE : View.GONE);
 
         holder.ivCheckbox.setOnClickListener(v -> {
@@ -122,7 +126,7 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
 
     @Override
     public int getItemCount() {
-        return taskList != null ? taskList.size() : 0;
+        return taskList.size();
     }
 
     static class TaskViewHolder extends RecyclerView.ViewHolder {

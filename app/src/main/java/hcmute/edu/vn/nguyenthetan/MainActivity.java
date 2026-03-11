@@ -1,5 +1,6 @@
 /**
  * MainActivity: Màn hình chính của ứng dụng.
+ * Chức năng: Hiển thị giao diện và quan sát dữ liệu từ ViewModel.
  */
 package hcmute.edu.vn.nguyenthetan;
 
@@ -18,29 +19,27 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.core.splashscreen.SplashScreen;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import hcmute.edu.vn.nguyenthetan.adapter.TaskAdapter;
-import hcmute.edu.vn.nguyenthetan.database.AppDatabase;
 import hcmute.edu.vn.nguyenthetan.model.Category;
 import hcmute.edu.vn.nguyenthetan.model.Task;
 import hcmute.edu.vn.nguyenthetan.repository.CategoryRepository;
-import hcmute.edu.vn.nguyenthetan.repository.TaskRepository;
+import hcmute.edu.vn.nguyenthetan.view.MainViewModel;
 
 public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTaskClickListener {
 
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
-    private ImageView btnMenu;
-    private CategoryRepository repository;
-    private TaskRepository taskRepository;
+    private CategoryRepository categoryRepository;
+    private MainViewModel viewModel;
 
     private RecyclerView rvTasks;
     private View layoutEmptyState;
@@ -50,50 +49,50 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
     private TextView tvSelectedCount;
     private ImageView btnCloseDeleteMode, btnDeleteSelected, btnEnterDeleteMode;
 
-    // 0: Hộp thư đến (Tất cả), 1: Hôm nay, 2: 7 ngày tới, 3: Theo Danh mục cụ thể, 4: Đã hoàn thành
-    private int currentFilterMode = 0;
-    private int currentCategoryId = -1;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        SplashScreen.installSplashScreen(this);
+        // 1. Splash Screen
+        SplashScreen splashScreen = SplashScreen.installSplashScreen(this);
         long startTime = System.currentTimeMillis();
-        SplashScreen.installSplashScreen(this).setKeepOnScreenCondition(() -> System.currentTimeMillis() - startTime < 2000);
+        splashScreen.setKeepOnScreenCondition(() -> System.currentTimeMillis() - startTime < 2000);
 
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
-        
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
 
-        repository = new CategoryRepository(this);
-        taskRepository = new TaskRepository(this);
+        // Khởi tạo ViewModel và Repository
+        viewModel = new ViewModelProvider(this).get(MainViewModel.class);
+        categoryRepository = new CategoryRepository(this);
 
-        deleteData();
         initViews();
         setupRecyclerView();
         setupMenuListeners();
-    }
+        
+        // Quan sát dữ liệu từ ViewModel
+        viewModel.getTasks().observe(this, tasks -> {
+            if (tasks == null || tasks.isEmpty()) {
+                rvTasks.setVisibility(View.GONE);
+                layoutEmptyState.setVisibility(View.VISIBLE);
+            } else {
+                rvTasks.setVisibility(View.VISIBLE);
+                layoutEmptyState.setVisibility(View.GONE);
+                taskAdapter.setData(tasks);
+            }
+        });
 
-    private void deleteData(){
-        new Thread(() -> {
-            AppDatabase.getInstance(this).clearAllTables();
-            runOnUiThread(() -> {
-                checkAndInitDefaultCategories();
-                refreshMenu();
-                refreshTaskList();
-            });
-        }).start();
+        // Nạp danh mục mặc định và refresh menu
+        checkAndInitDefaultCategories();
+        refreshMenu();
+        viewModel.loadTasks(); // Load lần đầu
     }
 
     private void initViews() {
         drawerLayout = findViewById(R.id.drawerLayout);
         navigationView = findViewById(R.id.navigationView);
-        btnMenu = findViewById(R.id.btnMenu);
         rvTasks = findViewById(R.id.rvTasks);
         layoutEmptyState = findViewById(R.id.layoutEmptyState);
 
-        // Contextual Bar Views
         layoutNormalBar = findViewById(R.id.layoutNormalBar);
         layoutDeleteBar = findViewById(R.id.layoutDeleteBar);
         tvSelectedCount = findViewById(R.id.tvSelectedCount);
@@ -109,33 +108,23 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
         });
 
         findViewById(R.id.fab).setOnClickListener(v -> {
-            List<Category> categories = repository.getAllCategories();
-            if (categories.isEmpty()) {
-                Toast.makeText(this, "Vui lòng tạo danh mục trước!", Toast.LENGTH_SHORT).show();
-                return;
-            }
-            TaskDialogHelper.showTaskDialog(this, categories, null, task -> {
-                taskRepository.addTask(task);
-                refreshTaskList();
-            });
+            List<Category> categories = categoryRepository.getAllCategories();
+            TaskDialogHelper.showTaskDialog(this, categories, null, task -> viewModel.addTask(task));
         });
 
-        btnMenu.setOnClickListener(v -> drawerLayout.openDrawer(GravityCompat.START));
+        findViewById(R.id.btnMenu).setOnClickListener(v -> drawerLayout.openDrawer(GravityCompat.START));
         navigationView.setItemIconTintList(null);
 
-        // Enter Delete Mode via Trash Icon
         btnEnterDeleteMode.setOnClickListener(v -> {
             taskAdapter.startMultiSelect();
             updateContextualBar(true);
         });
 
-        // Exit Delete Mode
         btnCloseDeleteMode.setOnClickListener(v -> {
             taskAdapter.clearSelection();
             updateContextualBar(false);
         });
 
-        // Delete Action
         btnDeleteSelected.setOnClickListener(v -> {
             List<Task> selected = taskAdapter.getSelectedTasks();
             if (selected.isEmpty()) return;
@@ -144,10 +133,9 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
                     .setTitle("Xóa nhiệm vụ")
                     .setMessage("Bạn chắc chắn muốn xóa " + selected.size() + " nhiệm vụ này?")
                     .setPositiveButton("Xóa", (d, w) -> {
-                        taskRepository.deleteMultiple(selected);
+                        viewModel.deleteTasks(selected);
                         taskAdapter.clearSelection();
                         updateContextualBar(false);
-                        refreshTaskList();
                     })
                     .setNegativeButton("Hủy", null)
                     .show();
@@ -156,7 +144,6 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
 
     private void updateContextualBar(boolean isDeleteMode) {
         if (layoutNormalBar == null || layoutDeleteBar == null) return;
-        
         layoutNormalBar.setVisibility(isDeleteMode ? View.GONE : View.VISIBLE);
         layoutDeleteBar.setVisibility(isDeleteMode ? View.VISIBLE : View.GONE);
         if (isDeleteMode) {
@@ -173,78 +160,47 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
     private void setupMenuListeners() {
         navigationView.setNavigationItemSelectedListener(item -> {
             int id = item.getItemId();
-            if (id == R.id.nav_today) currentFilterMode = 1;
-            else if (id == R.id.nav_next_7_days) currentFilterMode = 2;
-            else if (id == R.id.nav_inbox) currentFilterMode = 0;
-            else if (id == R.id.nav_completed) currentFilterMode = 4;
+            if (id == R.id.nav_today) viewModel.setFilterMode(1);
+            else if (id == R.id.nav_next_7_days) viewModel.setFilterMode(2);
+            else if (id == R.id.nav_inbox) viewModel.setFilterMode(0);
+            else if (id == R.id.nav_completed) viewModel.setFilterMode(4);
             else if (id == R.id.nav_add_list) {
                 CategoryDialogHelper.showAddEditDialog(this, null, (category, action) -> {
                     if (action.equals("ADD")) {
-                        repository.addCategory(category.getName());
+                        categoryRepository.addCategory(category.getName());
                         refreshMenu();
                     }
                 });
                 drawerLayout.closeDrawer(GravityCompat.START);
                 return true;
             } else {
-                currentFilterMode = 3;
-                currentCategoryId = id;
+                viewModel.setCategoryFilter(id);
             }
-            refreshTaskList();
             drawerLayout.closeDrawer(GravityCompat.START);
             return true;
         });
     }
 
-    public void refreshTaskList() {
-        List<Task> tasks;
-        // Chặn đánh dấu hoàn thành nếu đang ở mục "Đã hoàn thành"
-        taskAdapter.setCanToggleComplete(currentFilterMode != 4);
-
-        switch (currentFilterMode) {
-            case 1: tasks = taskRepository.getTasksToday(); break;
-            case 2: tasks = taskRepository.getTasksNext7Days(); break;
-            case 3: tasks = taskRepository.getTasksByCategoryId(currentCategoryId); break;
-            case 4: tasks = taskRepository.getCompletedTasks(); break;
-            default: tasks = taskRepository.getAllTasks(); break;
-        }
-
-        if (tasks == null || tasks.isEmpty()) {
-            rvTasks.setVisibility(View.GONE);
-            layoutEmptyState.setVisibility(View.VISIBLE);
-        } else {
-            rvTasks.setVisibility(View.VISIBLE);
-            layoutEmptyState.setVisibility(View.GONE);
-            taskAdapter.setData(tasks);
-        }
-    }
-
     private void refreshMenu() {
-        NavigationMenuHelper.loadCategories(this, navigationView, repository, drawerLayout);
+        NavigationMenuHelper.loadCategories(this, navigationView, categoryRepository, drawerLayout);
     }
 
     private void checkAndInitDefaultCategories() {
-        if (repository.getAllCategories().isEmpty()) {
-            repository.addCategory("Personal");
-            repository.addCategory("Work");
-            repository.addCategory("Shopping");
-            repository.addCategory("Learning");
-            repository.addCategory("Fitness");
-            repository.addCategory("Wish List");
+        if (categoryRepository.getAllCategories().isEmpty()) {
+            categoryRepository.addCategory("Personal");
+            categoryRepository.addCategory("Work");
+            categoryRepository.addCategory("Shopping");
+            categoryRepository.addCategory("Learning");
+            categoryRepository.addCategory("Fitness");
+            categoryRepository.addCategory("Wish List");
         }
     }
 
     @Override
     public void onTaskClick(Task task) {
-        if (taskAdapter.getSelectedTasks().size() > 0) {
-            updateContextualBar(true);
-            return;
-        }
-        List<Category> categories = repository.getAllCategories();
-        TaskDialogHelper.showTaskDialog(this, categories, task, updatedTask -> {
-            taskRepository.updateTask(updatedTask);
-            refreshTaskList();
-        });
+        if (taskAdapter.getSelectedTasks().size() > 0) return;
+        List<Category> categories = categoryRepository.getAllCategories();
+        TaskDialogHelper.showTaskDialog(this, categories, task, updatedTask -> viewModel.updateTask(updatedTask));
     }
 
     @Override
@@ -254,15 +210,13 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
 
     @Override
     public void onCompleteClick(Task task) {
-        // Chỉ hiện hộp thoại xác nhận nếu task chưa hoàn thành
         if (!task.isCompleted()) {
             new android.app.AlertDialog.Builder(this)
                     .setTitle("Hoàn thành nhiệm vụ")
                     .setMessage("Bạn chắc chắn muốn đánh dấu hoàn thành nhiệm vụ này?")
                     .setPositiveButton("Đồng ý", (d, w) -> {
                         task.setCompleted(true);
-                        taskRepository.updateTask(task);
-                        refreshTaskList();
+                        viewModel.updateTask(task);
                     })
                     .setNegativeButton("Hủy", null)
                     .show();
@@ -271,11 +225,7 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
 
     @Override
     public void onSelectionChanged(int count) {
-        if (count == 0) {
-            updateContextualBar(false);
-        } else {
-            updateContextualBar(true);
-        }
+        updateContextualBar(count > 0);
     }
 
     @Override
@@ -291,8 +241,6 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
     }
 
     public void setCategoryFilter(int categoryId) {
-        this.currentFilterMode = 3;
-        this.currentCategoryId = categoryId;
-        refreshTaskList();
+        viewModel.setCategoryFilter(categoryId);
     }
 }
