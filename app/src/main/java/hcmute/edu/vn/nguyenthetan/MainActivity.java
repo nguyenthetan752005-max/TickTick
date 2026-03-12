@@ -12,6 +12,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.GravityCompat;
@@ -68,6 +69,7 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
         initViews();
         setupRecyclerView();
         setupMenuListeners();
+        setupOnBackPressed();
         
         // Quan sát dữ liệu từ ViewModel
         viewModel.getTasks().observe(this, tasks -> {
@@ -139,6 +141,24 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
                     })
                     .setNegativeButton("Hủy", null)
                     .show();
+        });
+    }
+
+    private void setupOnBackPressed() {
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                if (taskAdapter != null && taskAdapter.getSelectedTasks().size() > 0) {
+                    taskAdapter.clearSelection();
+                    updateContextualBar(false);
+                } else if (drawerLayout != null && drawerLayout.isDrawerOpen(GravityCompat.START)) {
+                    drawerLayout.closeDrawer(GravityCompat.START);
+                } else {
+                    // Nếu không còn gì để xử lý riêng, vô hiệu hóa callback này và gọi lại để hệ thống xử lý mặc định
+                    setEnabled(false);
+                    getOnBackPressedDispatcher().onBackPressed();
+                }
+            }
         });
     }
 
@@ -226,18 +246,6 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
     @Override
     public void onSelectionChanged(int count) {
         updateContextualBar(count > 0);
-    }
-
-    @Override
-    public void onBackPressed() {
-        if (taskAdapter.getSelectedTasks().size() > 0) {
-            taskAdapter.clearSelection();
-            updateContextualBar(false);
-        } else if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
-            drawerLayout.closeDrawer(GravityCompat.START);
-        } else {
-            super.onBackPressed();
-        }
     }
 
     public void setCategoryFilter(int categoryId) {
