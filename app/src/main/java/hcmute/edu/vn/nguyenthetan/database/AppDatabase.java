@@ -6,17 +6,20 @@ import androidx.room.Room;
 import androidx.room.RoomDatabase;
 
 import hcmute.edu.vn.nguyenthetan.model.Category;
+import hcmute.edu.vn.nguyenthetan.model.Reminder;
 import hcmute.edu.vn.nguyenthetan.model.Task;
 import hcmute.edu.vn.nguyenthetan.model.dao.CategoryDao;
+import hcmute.edu.vn.nguyenthetan.model.dao.ReminderDao;
 import hcmute.edu.vn.nguyenthetan.model.dao.TaskDao;
 
-@Database(entities = {Category.class, Task.class}, version = 3) // Tăng lên phiên bản 3
+@Database(entities = {Category.class, Task.class, Reminder.class}, version = 4) // Tăng lên phiên bản 4
 public abstract class AppDatabase extends RoomDatabase {
 
     private static AppDatabase instance;
 
     public abstract CategoryDao categoryDao();
     public abstract TaskDao taskDao();
+    public abstract ReminderDao reminderDao();
 
     public static synchronized AppDatabase getInstance(Context context) {
         if (instance == null) {

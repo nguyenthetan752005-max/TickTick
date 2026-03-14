@@ -33,4 +33,7 @@ public interface TaskDao {
 
     @Query("SELECT * FROM tasks WHERE isCompleted = 1 ORDER BY id DESC")
     List<Task> getCompletedTasks();
+
+    @Query("SELECT * FROM tasks WHERE id = :taskId")
+    Task getTaskById(int taskId);
 }

@@ -53,12 +53,57 @@
             android:textColorHint="#4DFFFFFF"
             android:textSize="16sp" />
 
+        <!-- Khu vực nhắc nhở -->
+        <LinearLayout
+            android:id="@+id/layoutReminderSection"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:orientation="vertical">
+
+            <!-- Nút thêm nhắc nhở -->
+            <LinearLayout
+                android:id="@+id/btnAddReminder"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/btn_outline"
+                android:backgroundTint="#2C2C2E"
+                android:gravity="center"
+                android:paddingHorizontal="14dp"
+                android:paddingVertical="8dp">
+
+                <ImageView
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:src="@android:drawable/ic_lock_idle_alarm"
+                    app:tint="@color/blue_primary" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="6dp"
+                    android:text="Thêm nhắc nhở"
+                    android:textColor="@color/blue_primary"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <!-- Container hiển thị danh sách reminders đã thêm -->
+            <LinearLayout
+                android:id="@+id/layoutReminderList"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:orientation="vertical" />
+        </LinearLayout>
+
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
             android:layout_marginVertical="24dp"
             android:background="#33FFFFFF" />
 
+        <!-- Hàng 1: Ngày, Giờ, Danh mục -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -72,12 +117,12 @@
                 android:background="@drawable/btn_outline"
                 android:backgroundTint="#2C2C2E"
                 android:gravity="center"
-                android:paddingHorizontal="16dp"
+                android:paddingHorizontal="12dp"
                 android:paddingVertical="10dp">
 
                 <ImageView
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
                     android:src="@android:drawable/ic_menu_today"
                     app:tint="@color/blue_primary" />
 
@@ -85,24 +130,57 @@
                     android:id="@+id/tvDueDate"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
+                    android:layout_marginStart="6dp"
                     android:text="Hôm nay"
                     android:textColor="@color/blue_primary"
-                    android:textSize="15sp"
+                    android:textSize="14sp"
                     android:textStyle="bold" />
             </LinearLayout>
 
             <View
-                android:layout_width="12dp"
+                android:layout_width="6dp"
                 android:layout_height="0dp" />
 
+            <!-- Nút chọn giờ -->
             <LinearLayout
+                android:id="@+id/btnTimeContainer"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:background="@drawable/btn_outline"
                 android:backgroundTint="#2C2C2E"
                 android:gravity="center"
                 android:paddingHorizontal="12dp"
+                android:paddingVertical="10dp">
+
+                <ImageView
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:src="@android:drawable/ic_menu_recent_history"
+                    app:tint="@color/blue_primary" />
+
+                <TextView
+                    android:id="@+id/tvDueTime"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="6dp"
+                    android:text="00:00"
+                    android:textColor="@color/blue_primary"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <View
+                android:layout_width="6dp"
+                android:layout_height="0dp" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@drawable/btn_outline"
+                android:backgroundTint="#2C2C2E"
+                android:gravity="center_vertical"
+                android:paddingHorizontal="8dp"
                 android:paddingVertical="6dp">
 
                 <ImageView
@@ -113,16 +191,20 @@
 
                 <Spinner
                     android:id="@+id/spCategory"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    android:layout_weight="1"
                     android:background="@android:color/transparent"
                     android:dropDownWidth="200dp" />
             </LinearLayout>
+        </LinearLayout>
 
-            <View
-                android:layout_width="0dp"
-                android:layout_height="0dp"
-                android:layout_weight="1" />
+        <!-- Hàng 2: Nút Lưu -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:gravity="end">
 
             <ImageButton
                 android:id="@+id/btnSaveTask"

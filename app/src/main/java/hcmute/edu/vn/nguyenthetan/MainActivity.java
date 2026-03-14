@@ -4,6 +4,10 @@
  */
 package hcmute.edu.vn.nguyenthetan;
 
+import android.Manifest;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.view.WindowManager;
@@ -14,6 +18,8 @@ import android.widget.Toast;
 import androidx.activity.EdgeToEdge;
 import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.GravityCompat;
 import androidx.core.view.ViewCompat;
@@ -33,9 +39,12 @@ import hcmute.edu.vn.nguyenthetan.adapter.TaskAdapter;
 import hcmute.edu.vn.nguyenthetan.model.Category;
 import hcmute.edu.vn.nguyenthetan.model.Task;
 import hcmute.edu.vn.nguyenthetan.repository.CategoryRepository;
+import hcmute.edu.vn.nguyenthetan.service.ReminderService;
 import hcmute.edu.vn.nguyenthetan.view.MainViewModel;
 
 public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTaskClickListener {
+
+    private static final int REQUEST_NOTIFICATION_PERMISSION = 1001;
 
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
@@ -87,6 +96,36 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
         checkAndInitDefaultCategories();
         refreshMenu();
         viewModel.loadTasks(); // Load lần đầu
+
+        // Xin quyền thông báo (Android 13+) và khởi động Reminder Service
+        requestNotificationPermission();
+        startReminderService();
+    }
+
+    /**
+     * Xin quyền POST_NOTIFICATIONS cho Android 13+.
+     */
+    private void requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                    != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.POST_NOTIFICATIONS},
+                        REQUEST_NOTIFICATION_PERMISSION);
+            }
+        }
+    }
+
+    /**
+     * Khởi động Foreground Service cho Reminder.
+     */
+    private void startReminderService() {
+        Intent serviceIntent = new Intent(this, ReminderService.class);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForegroundService(serviceIntent);
+        } else {
+            startService(serviceIntent);
+        }
     }
 
     private void initViews() {
@@ -111,7 +150,14 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
 
         findViewById(R.id.fab).setOnClickListener(v -> {
             List<Category> categories = categoryRepository.getAllCategories();
-            TaskDialogHelper.showTaskDialog(this, categories, null, task -> viewModel.addTask(task));
+            TaskDialogHelper.showTaskDialog(this, categories, null,
+                    (TaskDialogHelper.TaskCallback) (task, pendingReminders) -> {
+                        if (pendingReminders != null && !pendingReminders.isEmpty()) {
+                            viewModel.addTaskWithReminders(task, pendingReminders);
+                        } else {
+                            viewModel.addTask(task);
+                        }
+                    });
         });
 
         findViewById(R.id.btnMenu).setOnClickListener(v -> drawerLayout.openDrawer(GravityCompat.START));
@@ -154,7 +200,6 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
                 } else if (drawerLayout != null && drawerLayout.isDrawerOpen(GravityCompat.START)) {
                     drawerLayout.closeDrawer(GravityCompat.START);
                 } else {
-                    // Nếu không còn gì để xử lý riêng, vô hiệu hóa callback này và gọi lại để hệ thống xử lý mặc định
                     setEnabled(false);
                     getOnBackPressedDispatcher().onBackPressed();
                 }
@@ -220,7 +265,11 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
     public void onTaskClick(Task task) {
         if (taskAdapter.getSelectedTasks().size() > 0) return;
         List<Category> categories = categoryRepository.getAllCategories();
-        TaskDialogHelper.showTaskDialog(this, categories, task, updatedTask -> viewModel.updateTask(updatedTask));
+        TaskDialogHelper.showTaskDialog(this, categories, task,
+                (TaskDialogHelper.TaskCallback) (updatedTask, pendingReminders) -> {
+                    viewModel.updateTask(updatedTask);
+                    // Pending reminders cho edit mode đã được xử lý trong TaskDialogHelper
+                });
     }
 
     @Override
