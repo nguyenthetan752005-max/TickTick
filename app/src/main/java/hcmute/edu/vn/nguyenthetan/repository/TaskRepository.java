@@ -27,6 +27,11 @@ public class TaskRepository {
         return taskDao.getTasksByCategoryId(catId);
     }
 
+    // Lấy Task trong Hộp thư đến (không có deadline)
+    public List<Task> getInboxTasks() {
+        return taskDao.getInboxTasks();
+    }
+
     // Hàm lấy Task theo khoảng thời gian linh hoạt (Dùng cho cả Today và 7 Days)
     public List<Task> getTasksByDateRange(long start, long end) {
         return taskDao.getTasksByDateRange(start, end);

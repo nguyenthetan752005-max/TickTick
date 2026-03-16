@@ -25,6 +25,9 @@ public interface TaskDao {
     @Query("SELECT * FROM tasks WHERE isCompleted = 0 ORDER BY id DESC")
     List<Task> getAllTasks();
 
+    @Query("SELECT * FROM tasks WHERE dueDate = 0 AND isCompleted = 0 ORDER BY id DESC")
+    List<Task> getInboxTasks();
+
     @Query("SELECT * FROM tasks WHERE categoryId = :catId AND isCompleted = 0 ORDER BY id DESC")
     List<Task> getTasksByCategoryId(int catId);
 

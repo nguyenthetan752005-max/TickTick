@@ -18,6 +18,10 @@
             android:id="@+id/nav_completed"
             android:icon="@android:drawable/checkbox_on_background"
             android:title="Task đã hoàn thành" />
+        <item
+            android:id="@+id/nav_all"
+            android:icon="@android:drawable/ic_menu_sort_by_size"
+            android:title="Tất cả nhiệm vụ" />
     </group>
 
     <item android:id="@+id/nav_lists_header" android:title="Lists">

@@ -108,6 +108,7 @@ public class TaskDialogHelper {
         ImageButton btnSave = view.findViewById(R.id.btnSaveTask);
         LinearLayout btnAddReminder = view.findViewById(R.id.btnAddReminder);
         LinearLayout layoutReminderList = view.findViewById(R.id.layoutReminderList);
+        TextView btnClearDeadline = view.findViewById(R.id.btnClearDeadline); // Nút xoá deadline mới
 
         String[] catNames = new String[categories.size()];
         for(int i=0; i<categories.size(); i++) catNames[i] = categories.get(i).getName();
@@ -127,10 +128,24 @@ public class TaskDialogHelper {
         // Danh sách reminders đã lưu trong DB (chỉ khi edit)
         final List<Reminder> existingReminders = new ArrayList<>();
 
+        // Trạng thái lưu deadline
+        final boolean[] hasDeadline = {false};
+
         if (existingTask != null) {
             etName.setText(existingTask.getName());
             etDesc.setText(existingTask.getDescription());
-            selectedCalendar.setTimeInMillis(existingTask.getDueDate());
+            hasDeadline[0] = (existingTask.getDueDate() > 0);
+            if (hasDeadline[0]) {
+                selectedCalendar.setTimeInMillis(existingTask.getDueDate());
+                tvDate.setText(sdfDate.format(selectedCalendar.getTime()));
+                tvTime.setText(sdfTime.format(selectedCalendar.getTime()));
+                if (btnClearDeadline != null) btnClearDeadline.setVisibility(View.VISIBLE);
+            } else {
+                tvDate.setText("Không có");
+                tvTime.setText("");
+                if (btnClearDeadline != null) btnClearDeadline.setVisibility(View.GONE);
+            }
+
             for (int i = 0; i < categories.size(); i++) {
                 if (categories.get(i).getId() == existingTask.getCategoryId()) {
                     spCategory.setSelection(i);
@@ -152,9 +167,24 @@ public class TaskDialogHelper {
                     });
                 }
             }).start();
+        } else {
+            hasDeadline[0] = false; // Mặc định tạo mới không có deadline
+            tvDate.setText("Thêm ngày");
+            tvTime.setText("");
+            if (btnClearDeadline != null) btnClearDeadline.setVisibility(View.GONE);
         }
-        tvDate.setText(sdfDate.format(selectedCalendar.getTime()));
-        tvTime.setText(sdfTime.format(selectedCalendar.getTime()));
+
+        if (btnClearDeadline != null) {
+            btnClearDeadline.setOnClickListener(v -> {
+                hasDeadline[0] = false;
+                tvDate.setText("Thêm ngày");
+                tvTime.setText("");
+                pendingReminders.clear();
+                layoutReminderList.removeAllViews();
+                btnClearDeadline.setVisibility(View.GONE);
+                Toast.makeText(context, "Đã xóa hạn chót & nhắc nhở", Toast.LENGTH_SHORT).show();
+            });
+        }
 
         // ===== Chọn ngày =====
         btnDateContainer.setOnClickListener(v -> {
@@ -168,6 +198,8 @@ public class TaskDialogHelper {
 
                 tvDate.setText(sdfDate.format(selectedCalendar.getTime()));
                 tvTime.setText(sdfTime.format(selectedCalendar.getTime()));
+                hasDeadline[0] = true;
+                if (btnClearDeadline != null) btnClearDeadline.setVisibility(View.VISIBLE);
             }, selectedCalendar.get(Calendar.YEAR), selectedCalendar.get(Calendar.MONTH), selectedCalendar.get(Calendar.DAY_OF_MONTH));
 
             // Không cho chọn ngày trong quá khứ
@@ -194,12 +226,18 @@ public class TaskDialogHelper {
                 selectedCalendar.set(Calendar.SECOND, 0);
 
                 tvTime.setText(sdfTime.format(selectedCalendar.getTime()));
+                hasDeadline[0] = true;
+                if (btnClearDeadline != null) btnClearDeadline.setVisibility(View.VISIBLE);
             }, selectedCalendar.get(Calendar.HOUR_OF_DAY), selectedCalendar.get(Calendar.MINUTE), true).show();
         });
 
         // ===== Xử lý nút "Thêm nhắc nhở" =====
         if (btnAddReminder != null) {
             btnAddReminder.setOnClickListener(v -> {
+                if (!hasDeadline[0]) {
+                    Toast.makeText(context, "Vui lòng chọn hạn chót trước khi thêm nhắc nhở!", Toast.LENGTH_SHORT).show();
+                    return;
+                }
                 long dueDate = selectedCalendar.getTimeInMillis();
 
                 // Kiểm tra deadline hợp lệ trước khi cho thêm reminder
@@ -223,12 +261,25 @@ public class TaskDialogHelper {
                 return;
             }
 
-            long deadlineTime = selectedCalendar.getTimeInMillis();
+            long deadlineTime = hasDeadline[0] ? selectedCalendar.getTimeInMillis() : 0;
 
-            // Kiểm tra deadline phải trong tương lai
-            if (deadlineTime <= System.currentTimeMillis()) {
-                Toast.makeText(context, "Deadline phải trong tương lai!", Toast.LENGTH_SHORT).show();
-                return;
+            // Xóa bỏ kiểm tra chặn deadline trong quá khứ để cho phép lưu/chỉnh sửa task bị trễ hạn
+
+            // Tự động thêm nhắc nhở tại thời điểm đến hạn nếu chưa có (chỉ áp dụng cho tương lai)
+            if (hasDeadline[0] && deadlineTime > System.currentTimeMillis()) {
+                boolean hasAtDeadline = false;
+                if (existingTask != null) {
+                    for (Reminder r : existingReminders) {
+                        if (r.getReminderTime() == deadlineTime) hasAtDeadline = true;
+                    }
+                }
+                for (PendingReminder pr : pendingReminders) {
+                    if (calculateReminderTime(deadlineTime, pr.value, pr.unitIndex) == deadlineTime) hasAtDeadline = true;
+                }
+                if (!hasAtDeadline) {
+                    PendingReminder implicitReminder = new PendingReminder(0, 0, deadlineTime, "Tại thời điểm đến hạn");
+                    pendingReminders.add(implicitReminder);
+                }
             }
 
             // Kiểm tra tất cả pending reminders vẫn hợp lệ với deadline hiện tại

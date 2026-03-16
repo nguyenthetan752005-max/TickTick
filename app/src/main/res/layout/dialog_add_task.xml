@@ -97,6 +97,18 @@
                 android:orientation="vertical" />
         </LinearLayout>
 
+        <TextView
+            android:id="@+id/btnClearDeadline"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:layout_marginTop="8dp"
+            android:text="Xóa hạn chót"
+            android:textColor="@color/design_default_color_error"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:visibility="gone" />
+
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"

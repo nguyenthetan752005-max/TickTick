@@ -35,14 +35,17 @@ import com.google.android.material.navigation.NavigationView;
 import java.util.ArrayList;
 import java.util.List;
 
+import hcmute.edu.vn.nguyenthetan.adapter.InboxAdapter;
+import hcmute.edu.vn.nguyenthetan.adapter.InboxItem;
 import hcmute.edu.vn.nguyenthetan.adapter.TaskAdapter;
+import hcmute.edu.vn.nguyenthetan.model.AppNotification;
 import hcmute.edu.vn.nguyenthetan.model.Category;
 import hcmute.edu.vn.nguyenthetan.model.Task;
 import hcmute.edu.vn.nguyenthetan.repository.CategoryRepository;
 import hcmute.edu.vn.nguyenthetan.service.ReminderService;
 import hcmute.edu.vn.nguyenthetan.view.MainViewModel;
 
-public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTaskClickListener {
+public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTaskClickListener, InboxAdapter.OnInboxItemClickListener {
 
     private static final int REQUEST_NOTIFICATION_PERMISSION = 1001;
 
@@ -54,9 +57,10 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
     private RecyclerView rvTasks;
     private View layoutEmptyState;
     private TaskAdapter taskAdapter;
+    private InboxAdapter inboxAdapter;
 
     private View layoutNormalBar, layoutDeleteBar;
-    private TextView tvSelectedCount;
+    private TextView tvSelectedCount, tvAppTitle;
     private ImageView btnCloseDeleteMode, btnDeleteSelected, btnEnterDeleteMode;
 
     @Override
@@ -80,15 +84,37 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
         setupMenuListeners();
         setupOnBackPressed();
         
-        // Quan sát dữ liệu từ ViewModel
+        // Quan sát dữ liệu Task (các filter khác)
         viewModel.getTasks().observe(this, tasks -> {
-            if (tasks == null || tasks.isEmpty()) {
-                rvTasks.setVisibility(View.GONE);
-                layoutEmptyState.setVisibility(View.VISIBLE);
-            } else {
-                rvTasks.setVisibility(View.VISIBLE);
-                layoutEmptyState.setVisibility(View.GONE);
-                taskAdapter.setData(tasks);
+            if (viewModel.getCurrentFilterMode() != 0) {
+                if (rvTasks.getAdapter() != taskAdapter) rvTasks.setAdapter(taskAdapter);
+                updateTitleBar();
+                
+                if (tasks == null || tasks.isEmpty()) {
+                    rvTasks.setVisibility(View.GONE);
+                    layoutEmptyState.setVisibility(View.VISIBLE);
+                } else {
+                    rvTasks.setVisibility(View.VISIBLE);
+                    layoutEmptyState.setVisibility(View.GONE);
+                    taskAdapter.setData(tasks);
+                }
+            }
+        });
+
+        // Quan sát dữ liệu Inbox
+        viewModel.getInboxData().observe(this, inboxItems -> {
+            if (viewModel.getCurrentFilterMode() == 0) {
+                if (rvTasks.getAdapter() != inboxAdapter) rvTasks.setAdapter(inboxAdapter);
+                updateTitleBar();
+                
+                if (inboxItems == null || inboxItems.isEmpty()) {
+                    rvTasks.setVisibility(View.GONE);
+                    layoutEmptyState.setVisibility(View.VISIBLE);
+                } else {
+                    rvTasks.setVisibility(View.VISIBLE);
+                    layoutEmptyState.setVisibility(View.GONE);
+                    inboxAdapter.setData(inboxItems);
+                }
             }
         });
 
@@ -137,6 +163,13 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
         layoutNormalBar = findViewById(R.id.layoutNormalBar);
         layoutDeleteBar = findViewById(R.id.layoutDeleteBar);
         tvSelectedCount = findViewById(R.id.tvSelectedCount);
+        tvAppTitle = findViewById(R.id.tvAppTitle); // Reference to the Title textview
+        if (tvAppTitle == null) {
+            // Fallback, see if there's a title TextView in normal bar
+            // Normally TickTick clone has a TextView acting as app title
+            // Let's assume there is one if not found we will just wrap it later.
+            try { tvAppTitle = (TextView) ((android.view.ViewGroup)layoutNormalBar).getChildAt(1); } catch(Exception e){}
+        }
         btnCloseDeleteMode = findViewById(R.id.btnCloseDeleteMode);
         btnDeleteSelected = findViewById(R.id.btnDeleteSelected);
         btnEnterDeleteMode = findViewById(R.id.btnEnterDeleteMode);
@@ -216,8 +249,22 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
         }
     }
 
+    private void updateTitleBar() {
+        if (tvAppTitle == null) return;
+        int mode = viewModel.getCurrentFilterMode();
+        switch (mode) {
+            case 0: tvAppTitle.setText("Hộp thư đến"); break;
+            case 1: tvAppTitle.setText("Hôm nay"); break;
+            case 2: tvAppTitle.setText("7 ngày kế tiếp"); break;
+            case 4: tvAppTitle.setText("Đã hoàn thành"); break;
+            case 5: tvAppTitle.setText("Tất cả nhiệm vụ"); break;
+            default: tvAppTitle.setText("Nhiệm vụ"); break;
+        }
+    }
+
     private void setupRecyclerView() {
         taskAdapter = new TaskAdapter(new ArrayList<>(), this);
+        inboxAdapter = new InboxAdapter(this);
         rvTasks.setLayoutManager(new LinearLayoutManager(this));
         rvTasks.setAdapter(taskAdapter);
     }
@@ -229,6 +276,7 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
             else if (id == R.id.nav_next_7_days) viewModel.setFilterMode(2);
             else if (id == R.id.nav_inbox) viewModel.setFilterMode(0);
             else if (id == R.id.nav_completed) viewModel.setFilterMode(4);
+            else if (id == R.id.nav_all) viewModel.setFilterMode(5);
             else if (id == R.id.nav_add_list) {
                 CategoryDialogHelper.showAddEditDialog(this, null, (category, action) -> {
                     if (action.equals("ADD")) {
@@ -263,6 +311,10 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
 
     @Override
     public void onTaskClick(Task task) {
+        if (task.isCompleted() || viewModel.getCurrentFilterMode() == 4) {
+            Toast.makeText(this, "Nhiệm vụ đã hoàn thành, chỉ có thể chọn để xóa", Toast.LENGTH_SHORT).show();
+            return;
+        }
         if (taskAdapter.getSelectedTasks().size() > 0) return;
         List<Category> categories = categoryRepository.getAllCategories();
         TaskDialogHelper.showTaskDialog(this, categories, task,
@@ -285,7 +337,7 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
                     .setMessage("Bạn chắc chắn muốn đánh dấu hoàn thành nhiệm vụ này?")
                     .setPositiveButton("Đồng ý", (d, w) -> {
                         task.setCompleted(true);
-                        viewModel.updateTask(task);
+                        viewModel.completeTask(task);
                     })
                     .setNegativeButton("Hủy", null)
                     .show();
@@ -299,5 +351,22 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
 
     public void setCategoryFilter(int categoryId) {
         viewModel.setCategoryFilter(categoryId);
+    }
+
+    // --- InboxAdapter Callbacks ---
+    @Override
+    public void onNotificationClick(AppNotification notification) {
+        notification.setRead(true);
+        viewModel.updateNotification(notification);
+    }
+
+    @Override
+    public void onNotificationDeleteClick(AppNotification notification) {
+        viewModel.deleteNotification(notification);
+    }
+
+    @Override
+    public void onTaskCompleteClick(Task task) {
+        onCompleteClick(task);
     }
 }
