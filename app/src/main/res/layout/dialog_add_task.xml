@@ -211,12 +211,23 @@
             </LinearLayout>
         </LinearLayout>
 
-        <!-- Hàng 2: Nút Lưu -->
+        <!-- Hàng 2: Nút Hủy và Nút Lưu -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
-            android:gravity="end">
+            android:gravity="end"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btnCancelTask"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:layout_marginEnd="8dp"
+                android:backgroundTint="#2C2C2E"
+                android:text="Hủy"
+                android:textColor="@color/white"
+                android:textStyle="bold" />
 
             <ImageButton
                 android:id="@+id/btnSaveTask"

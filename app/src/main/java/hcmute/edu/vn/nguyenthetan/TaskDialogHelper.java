@@ -106,6 +106,7 @@ public class TaskDialogHelper {
         View btnDateContainer = view.findViewById(R.id.btnDateContainer);
         View btnTimeContainer = view.findViewById(R.id.btnTimeContainer);
         ImageButton btnSave = view.findViewById(R.id.btnSaveTask);
+        View btnCancel = view.findViewById(R.id.btnCancelTask);
         LinearLayout btnAddReminder = view.findViewById(R.id.btnAddReminder);
         LinearLayout layoutReminderList = view.findViewById(R.id.layoutReminderList);
         TextView btnClearDeadline = view.findViewById(R.id.btnClearDeadline); // Nút xoá deadline mới
@@ -140,6 +141,10 @@ public class TaskDialogHelper {
                 tvDate.setText(sdfDate.format(selectedCalendar.getTime()));
                 tvTime.setText(sdfTime.format(selectedCalendar.getTime()));
                 if (btnClearDeadline != null) btnClearDeadline.setVisibility(View.VISIBLE);
+                
+                if (existingTask.getDueDate() <= System.currentTimeMillis()) {
+                    Toast.makeText(context, "Nhiệm vụ có thời gian hạn trong quá khứ nên không khả dụng, khuyên bạn nên đặt thời gian đến tương lai.", Toast.LENGTH_LONG).show();
+                }
             } else {
                 tvDate.setText("Không có");
                 tvTime.setText("");
@@ -193,8 +198,14 @@ public class TaskDialogHelper {
                 selectedCalendar.set(Calendar.MONTH, month);
                 selectedCalendar.set(Calendar.DAY_OF_MONTH, day);
 
-                // Kiểm tra nếu ngày+giờ đã chọn nằm trong quá khứ → đẩy giờ về hiện tại
-                adjustIfPast(selectedCalendar);
+                if (existingTask == null) {
+                    // Kiểm tra nếu ngày+giờ đã chọn nằm trong quá khứ → đẩy giờ về hiện tại
+                    adjustIfPast(selectedCalendar);
+                } else {
+                    if (selectedCalendar.getTimeInMillis() <= System.currentTimeMillis()) {
+                        Toast.makeText(context, "Nhiệm vụ có thời gian hạn trong quá khứ nên không khả dụng, khuyên bạn nên đặt thời gian đến tương lai.", Toast.LENGTH_LONG).show();
+                    }
+                }
 
                 tvDate.setText(sdfDate.format(selectedCalendar.getTime()));
                 tvTime.setText(sdfTime.format(selectedCalendar.getTime()));
@@ -202,8 +213,10 @@ public class TaskDialogHelper {
                 if (btnClearDeadline != null) btnClearDeadline.setVisibility(View.VISIBLE);
             }, selectedCalendar.get(Calendar.YEAR), selectedCalendar.get(Calendar.MONTH), selectedCalendar.get(Calendar.DAY_OF_MONTH));
 
-            // Không cho chọn ngày trong quá khứ
-            dpd.getDatePicker().setMinDate(System.currentTimeMillis() - 1000);
+            if (existingTask == null) {
+                // Không cho chọn ngày trong quá khứ khi thêm task mới
+                dpd.getDatePicker().setMinDate(System.currentTimeMillis() - 1000);
+            }
             dpd.show();
         });
 
@@ -217,8 +230,12 @@ public class TaskDialogHelper {
 
                 // Kiểm tra thời gian chọn có trong quá khứ không
                 if (tempCal.getTimeInMillis() <= System.currentTimeMillis()) {
-                    Toast.makeText(context, "Không thể chọn thời gian trong quá khứ!", Toast.LENGTH_SHORT).show();
-                    return;
+                    if (existingTask == null) {
+                        Toast.makeText(context, "Không thể chọn thời gian trong quá khứ!", Toast.LENGTH_SHORT).show();
+                        return;
+                    } else {
+                        Toast.makeText(context, "Nhiệm vụ có thời gian hạn trong quá khứ nên không khả dụng, khuyên bạn nên đặt thời gian đến tương lai.", Toast.LENGTH_LONG).show();
+                    }
                 }
 
                 selectedCalendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
@@ -230,6 +247,11 @@ public class TaskDialogHelper {
                 if (btnClearDeadline != null) btnClearDeadline.setVisibility(View.VISIBLE);
             }, selectedCalendar.get(Calendar.HOUR_OF_DAY), selectedCalendar.get(Calendar.MINUTE), true).show();
         });
+
+        // ===== Hủy task =====
+        if (btnCancel != null) {
+            btnCancel.setOnClickListener(v -> dialog.dismiss());
+        }
 
         // ===== Xử lý nút "Thêm nhắc nhở" =====
         if (btnAddReminder != null) {
@@ -263,7 +285,11 @@ public class TaskDialogHelper {
 
             long deadlineTime = hasDeadline[0] ? selectedCalendar.getTimeInMillis() : 0;
 
-            // Xóa bỏ kiểm tra chặn deadline trong quá khứ để cho phép lưu/chỉnh sửa task bị trễ hạn
+            // Kiểm tra: Không cho tạo task mới với deadline trong quá khứ
+            if (existingTask == null && hasDeadline[0] && deadlineTime <= System.currentTimeMillis()) {
+                Toast.makeText(context, "Không thể tạo nhiệm vụ với thời gian trong quá khứ!", Toast.LENGTH_SHORT).show();
+                return;
+            }
 
             // Tự động thêm nhắc nhở tại thời điểm đến hạn nếu chưa có (chỉ áp dụng cho tương lai)
             if (hasDeadline[0] && deadlineTime > System.currentTimeMillis()) {
