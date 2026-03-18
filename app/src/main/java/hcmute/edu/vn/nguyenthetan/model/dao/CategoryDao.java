@@ -22,6 +22,5 @@ public interface CategoryDao {
     @Query("SELECT * FROM categories ORDER BY id DESC")
     List<Category> getAllCategories();
 
-    @Query("SELECT * FROM categories WHERE id = :id LIMIT 1")
-    Category getCategoryById(int id);
+
 }

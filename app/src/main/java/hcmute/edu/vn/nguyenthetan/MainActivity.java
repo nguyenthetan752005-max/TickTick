@@ -323,6 +323,7 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
             case 2: tvAppTitle.setText("7 ngày kế tiếp"); break;
             case 4: tvAppTitle.setText("Đã hoàn thành"); break;
             case 5: tvAppTitle.setText("Tất cả nhiệm vụ"); break;
+            case 6: tvAppTitle.setText("Nhiệm vụ nháp"); break;
             default: tvAppTitle.setText("Nhiệm vụ"); break;
         }
     }
@@ -342,6 +343,7 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
             else if (id == R.id.nav_inbox) viewModel.setFilterMode(0);
             else if (id == R.id.nav_completed) viewModel.setFilterMode(4);
             else if (id == R.id.nav_all) viewModel.setFilterMode(5);
+            else if (id == R.id.nav_drafts) viewModel.setFilterMode(6);
             else if (id == R.id.nav_add_list) {
                 CategoryDialogHelper.showAddEditDialog(this, null, (category, action) -> {
                     if (action.equals("ADD")) {
@@ -428,10 +430,5 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
     @Override
     public void onNotificationDeleteClick(AppNotification notification) {
         viewModel.deleteNotification(notification);
-    }
-
-    @Override
-    public void onTaskCompleteClick(Task task) {
-        onCompleteClick(task);
     }
 }
