@@ -34,6 +34,18 @@
             app:layout_constraintStart_toEndOf="@id/btnMenu"
             app:layout_constraintTop_toTopOf="parent" />
 
+        <!-- Nút Nhạc Chill -->
+        <ImageView
+            android:id="@+id/btnMusic"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_marginEnd="16dp"
+            android:src="@android:drawable/ic_lock_silent_mode_off"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/btnEnterDeleteMode"
+            app:layout_constraintTop_toTopOf="parent"
+            app:tint="@color/white" />
+
         <!-- Nút thùng rác mặc định (Delete Mode) -->
         <ImageView
             android:id="@+id/btnEnterDeleteMode"

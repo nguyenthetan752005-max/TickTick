@@ -4,10 +4,14 @@
  */
 package hcmute.edu.vn.nguyenthetan;
 
+<<<<<<< Updated upstream
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
+=======
+import android.media.MediaPlayer;
+>>>>>>> Stashed changes
 import android.os.Bundle;
 import android.view.View;
 import android.view.WindowManager;
@@ -60,8 +64,16 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
     private InboxAdapter inboxAdapter;
 
     private View layoutNormalBar, layoutDeleteBar;
+<<<<<<< Updated upstream
     private TextView tvSelectedCount, tvAppTitle;
     private ImageView btnCloseDeleteMode, btnDeleteSelected, btnEnterDeleteMode;
+=======
+    private TextView tvSelectedCount;
+    private ImageView btnCloseDeleteMode, btnDeleteSelected, btnEnterDeleteMode, btnMusic;
+
+    private MediaPlayer mediaPlayer;
+    private boolean isPlaying = false;
+>>>>>>> Stashed changes
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -173,6 +185,7 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
         btnCloseDeleteMode = findViewById(R.id.btnCloseDeleteMode);
         btnDeleteSelected = findViewById(R.id.btnDeleteSelected);
         btnEnterDeleteMode = findViewById(R.id.btnEnterDeleteMode);
+        btnMusic = findViewById(R.id.btnMusic);
 
         View mainView = findViewById(R.id.main);
         ViewCompat.setOnApplyWindowInsetsListener(mainView, (v, insets) -> {
@@ -221,6 +234,58 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
                     .setNegativeButton("Hủy", null)
                     .show();
         });
+
+        btnMusic.setOnClickListener(v -> toggleMusic());
+    }
+
+    private void toggleMusic() {
+        if (isPlaying) {
+            pauseMusic();
+        } else {
+            playMusic();
+        }
+    }
+
+    private void playMusic() {
+        try {
+            if (mediaPlayer == null) {
+                // Lưu ý: Bạn cần thêm file nhạc (ví dụ: chill_rain_piano.mp3) vào thư mục res/raw
+                // Nếu chưa có file, app có thể bị crash hoặc không kêu. 
+                // Ở đây tôi giả định file tên là 'chill_music'
+                int resId = getResources().getIdentifier("chill_music", "raw", getPackageName());
+                if (resId != 0) {
+                    mediaPlayer = MediaPlayer.create(this, resId);
+                    mediaPlayer.setLooping(true);
+                } else {
+                    Toast.makeText(this, "Vui lòng thêm file nhạc vào res/raw/chill_music.mp3", Toast.LENGTH_LONG).show();
+                    return;
+                }
+            }
+            mediaPlayer.start();
+            isPlaying = true;
+            btnMusic.setImageResource(android.R.drawable.ic_lock_silent_mode); // Đổi icon sang đang phát
+            Toast.makeText(this, "Đang phát nhạc chill...", Toast.LENGTH_SHORT).show();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void pauseMusic() {
+        if (mediaPlayer != null && mediaPlayer.isPlaying()) {
+            mediaPlayer.pause();
+            isPlaying = false;
+            btnMusic.setImageResource(android.R.drawable.ic_lock_silent_mode_off); // Đổi icon sang tắt
+            Toast.makeText(this, "Đã dừng nhạc", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (mediaPlayer != null) {
+            mediaPlayer.release();
+            mediaPlayer = null;
+        }
     }
 
     private void setupOnBackPressed() {
