@@ -36,8 +36,4 @@ public class CategoryRepository {
         categoryDao.delete(category);
     }
 
-    // Hàm hỗ trợ tìm Category theo ID (nếu cần)
-    public Category getCategoryById(int id) {
-        return categoryDao.getCategoryById(id);
-    }
 }

@@ -62,16 +62,7 @@ public class TaskDialogHelper {
         void onSave(Task task, List<PendingReminder> pendingReminders);
     }
 
-    // Giữ backward compatibility
-    public interface SimpleTaskCallback {
-        void onSave(Task task);
-    }
 
-    public static void showTaskDialog(Context context, List<Category> categories, Task existingTask, SimpleTaskCallback simpleCallback) {
-        showTaskDialog(context, categories, existingTask, (task, pendingReminders) -> {
-            simpleCallback.onSave(task);
-        });
-    }
 
     public static void showTaskDialog(Context context, List<Category> categories, Task existingTask, TaskCallback callback) {
         BottomSheetDialog dialog = new BottomSheetDialog(context, R.style.CustomDialogTheme);

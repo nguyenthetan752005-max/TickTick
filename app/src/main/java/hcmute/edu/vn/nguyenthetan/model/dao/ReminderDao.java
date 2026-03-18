@@ -26,6 +26,5 @@ public interface ReminderDao {
     @Query("DELETE FROM reminders WHERE taskId = :taskId")
     void deleteByTaskId(int taskId);
 
-    @Query("SELECT * FROM reminders WHERE id = :id")
-    Reminder getById(int id);
+
 }

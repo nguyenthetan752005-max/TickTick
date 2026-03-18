@@ -47,9 +47,7 @@ public class ReminderRepository {
         reminderDao.deleteByTaskId(taskId);
     }
 
-    public Reminder getById(int id) {
-        return reminderDao.getById(id);
-    }
+
 
     /**
      * Cập nhật Timer trong Service.
@@ -78,10 +76,5 @@ public class ReminderRepository {
         }
     }
 
-    /**
-     * Đặt lại tất cả alarms.
-     */
-    public void rescheduleAllReminders() {
-        notifyServiceToUpdate();
-    }
+
 }
