@@ -15,6 +15,10 @@
             android:icon="@android:drawable/stat_notify_chat"
             android:title="Hộp thư đến" />
         <item
+            android:id="@+id/nav_drafts"
+            android:icon="@android:drawable/ic_menu_edit"
+            android:title="Nhiệm vụ nháp" />
+        <item
             android:id="@+id/nav_completed"
             android:icon="@android:drawable/checkbox_on_background"
             android:title="Task đã hoàn thành" />

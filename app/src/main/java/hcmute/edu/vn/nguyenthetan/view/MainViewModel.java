@@ -28,12 +28,6 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import androidx.core.app.NotificationCompat;
-import hcmute.edu.vn.nguyenthetan.model.AppNotification;
-import hcmute.edu.vn.nguyenthetan.model.Reminder;
-import hcmute.edu.vn.nguyenthetan.model.Task;
-import hcmute.edu.vn.nguyenthetan.repository.AppNotificationRepository;
-import hcmute.edu.vn.nguyenthetan.repository.ReminderRepository;
-import hcmute.edu.vn.nguyenthetan.repository.TaskRepository;
 
 public class MainViewModel extends AndroidViewModel {
 
@@ -81,17 +75,9 @@ public class MainViewModel extends AndroidViewModel {
     public void loadTasks() {
         new Thread(() -> {
             if (currentFilterMode == 0) {
-                // Load dữ liệu cho Inbox
-                List<Task> inboxTasks = taskRepository.getInboxTasks();
+                // Load dữ liệu cho Inbox (Chỉ Thông báo)
                 List<AppNotification> notifications = notificationRepository.getAllNotifications();
-
                 List<InboxItem> items = new java.util.ArrayList<>();
-
-                if (!inboxTasks.isEmpty()) {
-                    items.add(new HeaderItem("Nhiệm vụ chưa lên lịch"));
-                    for (Task t : inboxTasks)
-                        items.add(new TaskItemWrapper(t));
-                }
 
                 if (!notifications.isEmpty()) {
                     items.add(new HeaderItem("Thông báo nhắc nhở"));
@@ -100,7 +86,7 @@ public class MainViewModel extends AndroidViewModel {
                 }
 
                 if (items.isEmpty()) {
-                    items.add(new HeaderItem("Hộp thư đến trống"));
+                    items.add(new HeaderItem("Hộp thư thông báo trống"));
                 }
 
                 inboxData.postValue(items);
@@ -123,6 +109,9 @@ public class MainViewModel extends AndroidViewModel {
                     case 5:
                         result = taskRepository.getAllTasks();
                         break; // Tất cả task
+                    case 6:
+                        result = taskRepository.getInboxTasks(); // Lấy task nháp
+                        break;
                     default:
                         result = taskRepository.getAllTasks();
                         break;

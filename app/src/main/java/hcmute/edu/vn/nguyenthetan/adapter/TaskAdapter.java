@@ -77,8 +77,12 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
         holder.tvName.setText(task.getName());
         holder.tvDesc.setText(task.getDescription());
         
-        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
-        holder.tvDate.setText(sdf.format(new Date(task.getDueDate())));
+        if (task.getDueDate() > 0) {
+            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
+            holder.tvDate.setText(sdf.format(new Date(task.getDueDate())));
+        } else {
+            holder.tvDate.setText("Không có hạn chót");
+        }
 
         if (task.isCompleted()) {
             holder.ivCheckbox.setVisibility(View.GONE);

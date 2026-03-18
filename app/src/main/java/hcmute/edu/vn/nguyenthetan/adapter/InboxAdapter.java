@@ -23,8 +23,6 @@ public class InboxAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
     private OnInboxItemClickListener listener;
 
     public interface OnInboxItemClickListener {
-        void onTaskClick(Task task);
-        void onTaskCompleteClick(Task task);
         void onNotificationClick(AppNotification notification);
         void onNotificationDeleteClick(AppNotification notification);
     }
@@ -50,9 +48,6 @@ public class InboxAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
         if (viewType == InboxItem.TYPE_HEADER) {
             View view = inflater.inflate(R.layout.item_header, parent, false);
             return new HeaderViewHolder(view);
-        } else if (viewType == InboxItem.TYPE_TASK) {
-            View view = inflater.inflate(R.layout.item_task, parent, false);
-            return new TaskViewHolder(view);
         } else {
             View view = inflater.inflate(R.layout.item_notification, parent, false);
             return new NotificationViewHolder(view);
@@ -66,27 +61,6 @@ public class InboxAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
         if (holder instanceof HeaderViewHolder) {
             HeaderItem header = (HeaderItem) item;
             ((HeaderViewHolder) holder).tvHeaderTitle.setText(header.getTitle());
-        } else if (holder instanceof TaskViewHolder) {
-            TaskItemWrapper taskWrapper = (TaskItemWrapper) item;
-            Task task = taskWrapper.getTask();
-            TaskViewHolder taskHolder = (TaskViewHolder) holder;
-
-            taskHolder.tvName.setText(task.getName());
-            taskHolder.tvDesc.setText(task.getDescription());
-            taskHolder.tvDate.setText("Không có deadline");
-
-            if (task.isCompleted()) {
-                taskHolder.ivCheckbox.setVisibility(View.GONE);
-            } else {
-                taskHolder.ivCheckbox.setVisibility(View.VISIBLE);
-                taskHolder.ivCheckbox.setImageResource(android.R.drawable.checkbox_off_background);
-            }
-
-            taskHolder.ivSelected.setVisibility(View.GONE);
-
-            taskHolder.ivCheckbox.setOnClickListener(v -> listener.onTaskCompleteClick(task));
-            taskHolder.itemView.setOnClickListener(v -> listener.onTaskClick(task));
-
         } else if (holder instanceof NotificationViewHolder) {
             NotificationItemWrapper notifWrapper = (NotificationItemWrapper) item;
             AppNotification notif = notifWrapper.getNotification();
@@ -123,20 +97,6 @@ public class InboxAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
         public HeaderViewHolder(@NonNull View itemView) {
             super(itemView);
             tvHeaderTitle = itemView.findViewById(R.id.tvHeaderTitle);
-        }
-    }
-
-    static class TaskViewHolder extends RecyclerView.ViewHolder {
-        TextView tvName, tvDesc, tvDate;
-        ImageView ivCheckbox, ivSelected;
-
-        public TaskViewHolder(@NonNull View itemView) {
-            super(itemView);
-            tvName = itemView.findViewById(R.id.tvTaskName);
-            tvDesc = itemView.findViewById(R.id.tvTaskDesc);
-            tvDate = itemView.findViewById(R.id.tvTaskDate);
-            ivCheckbox = itemView.findViewById(R.id.ivCheckbox);
-            ivSelected = itemView.findViewById(R.id.ivSelected);
         }
     }
 
