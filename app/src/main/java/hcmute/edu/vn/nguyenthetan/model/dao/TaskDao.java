@@ -1,5 +1,6 @@
 package hcmute.edu.vn.nguyenthetan.model.dao;
 
+import android.database.Cursor;
 import androidx.room.Dao;
 import androidx.room.Delete;
 import androidx.room.Insert;
@@ -39,4 +40,7 @@ public interface TaskDao {
 
     @Query("SELECT * FROM tasks WHERE id = :taskId")
     Task getTaskById(int taskId);
+
+    @Query("SELECT * FROM tasks ORDER BY id DESC")
+    Cursor getTasksCursor();
 }

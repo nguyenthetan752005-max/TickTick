@@ -6,7 +6,9 @@ package hcmute.edu.vn.nguyenthetan;
 
 import android.Manifest;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
@@ -48,6 +50,8 @@ import hcmute.edu.vn.nguyenthetan.view.MainViewModel;
 public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTaskClickListener, InboxAdapter.OnInboxItemClickListener {
 
     private static final int REQUEST_NOTIFICATION_PERMISSION = 1001;
+    private static final String PREFS_NAME = "ticktick_prefs";
+    private static final String KEY_AVATAR_URI = "avatar_uri";
 
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
@@ -279,7 +283,15 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
             else if (id == R.id.nav_completed) viewModel.setFilterMode(4);
             else if (id == R.id.nav_all) viewModel.setFilterMode(5);
             else if (id == R.id.nav_drafts) viewModel.setFilterMode(6);
-            else if (id == R.id.nav_add_list) {
+            else if (id == R.id.nav_contacts) {
+                startActivity(new Intent(this, ContactsActivity.class));
+                drawerLayout.closeDrawer(GravityCompat.START);
+                return true;
+            } else if (id == R.id.nav_media) {
+                startActivity(new Intent(this, MediaActivity.class));
+                drawerLayout.closeDrawer(GravityCompat.START);
+                return true;
+            } else if (id == R.id.nav_add_list) {
                 CategoryDialogHelper.showAddEditDialog(this, null, (category, action) -> {
                     if (action.equals("ADD")) {
                         categoryRepository.addCategory(category.getName());
@@ -365,5 +377,33 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
     @Override
     public void onNotificationDeleteClick(AppNotification notification) {
         viewModel.deleteNotification(notification);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        loadProfileAvatar();
+    }
+
+    /**
+     * Tải ảnh đại diện từ SharedPreferences vào nav header.
+     */
+    private void loadProfileAvatar() {
+        View headerView = navigationView.getHeaderView(0);
+        if (headerView == null) return;
+        ImageView ivProfile = headerView.findViewById(R.id.ivProfile);
+        if (ivProfile == null) return;
+
+        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        String uriStr = prefs.getString(KEY_AVATAR_URI, null);
+        if (uriStr != null) {
+            try {
+                ivProfile.setImageURI(Uri.parse(uriStr));
+            } catch (Exception e) {
+                ivProfile.setImageResource(android.R.drawable.ic_menu_gallery);
+            }
+        } else {
+            ivProfile.setImageResource(android.R.drawable.ic_menu_gallery);
+        }
     }
 }

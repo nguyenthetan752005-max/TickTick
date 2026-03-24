@@ -9,4 +9,9 @@
     <color name="nav_background">#1C1C1E</color>
     <color name="gift_tag_bg">#332014</color>
     <color name="gift_tag_text">#E67E22</color>
+    <color name="green_call">#4CAF50</color>
+    <color name="orange_sms">#FF9800</color>
+    <color name="purple_music">#9C27B0</color>
+    <color name="card_dark">#1E1E1E</color>
+    <color name="red_stop">#F44336</color>
 </resources>

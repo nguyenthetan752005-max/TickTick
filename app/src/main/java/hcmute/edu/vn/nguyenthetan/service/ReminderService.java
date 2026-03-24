@@ -17,6 +17,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import hcmute.edu.vn.nguyenthetan.MainActivity;
 import hcmute.edu.vn.nguyenthetan.R;
@@ -38,6 +40,7 @@ public class ReminderService extends Service {
     private static final int FOREGROUND_NOTIFICATION_ID = 9999;
 
     private Timer reminderTimer;
+    private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
     @Override
     public void onCreate() {
@@ -74,13 +77,13 @@ public class ReminderService extends Service {
     }
 
     private void scheduleAllReminders() {
-        if (reminderTimer != null) {
-            reminderTimer.cancel();
-            reminderTimer.purge();
-        }
-        reminderTimer = new Timer("ReminderTimerThread");
+        executor.execute(() -> {
+            if (reminderTimer != null) {
+                reminderTimer.cancel();
+                reminderTimer.purge();
+            }
+            reminderTimer = new Timer("ReminderTimerThread");
 
-        new Thread(() -> {
             ReminderRepository repo = new ReminderRepository(getApplicationContext());
             List<Reminder> reminders = repo.getAllReminders();
             long currentTime = System.currentTimeMillis();
@@ -94,10 +97,14 @@ public class ReminderService extends Service {
                         }
                     };
                     
-                    reminderTimer.schedule(taskTimer, new Date(reminder.getReminderTime()));
+                    try {
+                        reminderTimer.schedule(taskTimer, new Date(reminder.getReminderTime()));
+                    } catch (IllegalStateException ignored) {
+                        // Bỏ qua nếu timer đã bị cancel
+                    }
                 }
             }
-        }).start();
+        });
     }
 
     private void handleReminderTrigger(Reminder reminder) {
@@ -159,6 +166,9 @@ public class ReminderService extends Service {
         if (reminderTimer != null) {
             reminderTimer.cancel();
             reminderTimer.purge();
+        }
+        if (executor != null) {
+            executor.shutdownNow();
         }
     }
 

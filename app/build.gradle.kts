@@ -47,4 +47,7 @@ dependencies {
     androidTestImplementation(libs.espresso.core)
     implementation(libs.androidx.room.runtime)
     annotationProcessor(libs.androidx.room.compiler)
+    
+    // Thư viện hỗ trợ cắt ảnh vuông/tròn cho Avatar
+    implementation("com.github.yalantis:ucrop:2.2.8")
 }

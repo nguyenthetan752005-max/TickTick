@@ -6,9 +6,21 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
+    <!-- Permissions cho Contacts -->
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
+    <uses-permission android:name="android.permission.CALL_PHONE" />
+    <uses-permission android:name="android.permission.SEND_SMS" />
+
+    <!-- Permissions cho Media -->
+    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
 
     <application
         android:allowBackup="true"
@@ -22,14 +34,30 @@
         <activity
             android:name=".MainActivity"
             android:theme="@style/Theme.App.Starting"
-
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- Activity Danh bạ -->
+        <activity
+            android:name=".ContactsActivity"
+            android:theme="@style/Theme.TickTick"
+            android:exported="false" />
+
+        <!-- Activity Media -->
+        <activity
+            android:name=".MediaActivity"
+            android:theme="@style/Theme.TickTick"
+            android:exported="false" />
+
+        <!-- Activity Cắt Ảnh uCrop -->
+        <activity
+            android:name="com.yalantis.ucrop.UCropActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
 
         <!-- Foreground Service cho Reminder -->
         <service
@@ -37,7 +65,17 @@
             android:foregroundServiceType="specialUse"
             android:exported="false" />
 
+        <!-- Foreground Service cho Music Player -->
+        <service
+            android:name=".service.MusicPlayerService"
+            android:foregroundServiceType="mediaPlayback"
+            android:exported="false" />
 
+        <!-- Custom Content Provider cho phép app khác truy xuất Tasks -->
+        <provider
+            android:name=".provider.TaskContentProvider"
+            android:authorities="hcmute.edu.vn.nguyenthetan.provider"
+            android:exported="true" />
 
     </application>
 
