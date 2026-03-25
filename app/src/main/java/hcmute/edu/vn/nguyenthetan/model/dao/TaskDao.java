@@ -43,4 +43,7 @@ public interface TaskDao {
 
     @Query("SELECT * FROM tasks ORDER BY id DESC")
     Cursor getTasksCursor();
+
+    @Query("SELECT * FROM tasks WHERE name LIKE '%' || :keyword || '%' ORDER BY id DESC")
+    List<Task> searchTasks(String keyword);
 }

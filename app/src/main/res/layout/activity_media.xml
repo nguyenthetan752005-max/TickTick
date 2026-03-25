@@ -5,7 +5,6 @@
     android:layout_height="match_parent"
     android:background="@color/black">
 
-    <!-- Toolbar -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/toolbarMedia"
         android:layout_width="match_parent"
@@ -28,7 +27,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
-            android:text="@string/title_media"
+            android:text="@string/title_music"
             android:textColor="@color/white"
             android:textSize="20sp"
             android:textStyle="bold"
@@ -37,48 +36,11 @@
             app:layout_constraintTop_toTopOf="parent" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <!-- Tab buttons -->
-    <LinearLayout
-        android:id="@+id/tabContainer"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:layout_marginHorizontal="16dp"
-        android:layout_marginTop="8dp"
-        android:orientation="horizontal"
-        app:layout_constraintTop_toBottomOf="@id/toolbarMedia">
-
-        <TextView
-            android:id="@+id/tabMusic"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:background="@color/blue_primary"
-            android:gravity="center"
-            android:text="🎵 Nhạc"
-            android:textColor="@color/white"
-            android:textSize="15sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/tabAvatar"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:background="@color/card_dark"
-            android:gravity="center"
-            android:text="📷 Ảnh đại diện"
-            android:textColor="@color/text_secondary"
-            android:textSize="15sp"
-            android:textStyle="bold" />
-    </LinearLayout>
-
-    <!-- Music Tab Content -->
     <FrameLayout
-        android:id="@+id/musicContainer"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tabContainer">
+        app:layout_constraintBottom_toTopOf="@id/layoutNowPlaying"
+        app:layout_constraintTop_toBottomOf="@id/toolbarMedia">
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rvMusic"
@@ -96,7 +58,6 @@
             android:textSize="16sp"
             android:visibility="gone" />
 
-        <!-- Nút tải nhạc lên -->
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/fabUploadMusic"
             android:layout_width="wrap_content"
@@ -108,69 +69,88 @@
             app:tint="@color/white" />
     </FrameLayout>
 
-    <!-- Avatar Tab Content -->
-    <ScrollView
-        android:id="@+id/avatarContainer"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/layoutNowPlaying"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_height="wrap_content"
+        android:background="#1E1E1E"
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="8dp"
         android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tabContainer">
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <TextView
+            android:id="@+id/tvNowPlayingTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:text="Tên bài hát"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:layout_marginEnd="12dp"
+            app:layout_constraintEnd_toStartOf="@id/btnNowPlayingPlay"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/tvNowPlayingArtist"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:text="Ca sĩ"
+            android:textColor="#A0A0A0"
+            android:textSize="14sp"
+            android:layout_marginEnd="12dp"
+            app:layout_constraintEnd_toStartOf="@id/btnNowPlayingPlay"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvNowPlayingTitle" />
+
+        <ImageView
+            android:id="@+id/btnNowPlayingPlay"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:padding="8dp"
+            android:src="@android:drawable/ic_media_pause"
+            app:layout_constraintBottom_toBottomOf="@id/tvNowPlayingArtist"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/tvNowPlayingTitle"
+            app:tint="@color/white" />
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center_horizontal"
-            android:orientation="vertical"
-            android:padding="32dp">
-
-            <!-- Current Avatar -->
-            <com.google.android.material.imageview.ShapeableImageView
-                android:id="@+id/ivCurrentAvatar"
-                android:layout_width="120dp"
-                android:layout_height="120dp"
-                android:layout_marginTop="24dp"
-                android:scaleType="centerCrop"
-                android:src="@android:drawable/ic_menu_gallery"
-                app:shapeAppearanceOverlay="@style/CircleImage"
-                app:strokeColor="@color/blue_primary"
-                app:strokeWidth="2dp" />
+            android:layout_marginTop="8dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            app:layout_constraintTop_toBottomOf="@id/tvNowPlayingArtist">
 
             <TextView
+                android:id="@+id/tvCurrentTime"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="Ảnh đại diện hiện tại"
-                android:textColor="@color/text_secondary"
-                android:textSize="14sp" />
+                android:text="00:00"
+                android:textColor="#A0A0A0"
+                android:textSize="12sp" />
 
-            <!-- Choose Avatar Button -->
-            <TextView
-                android:id="@+id/btnChooseAvatar"
-                android:layout_width="wrap_content"
-                android:layout_height="48dp"
-                android:layout_marginTop="24dp"
-                android:background="@drawable/btn_outline"
-                android:backgroundTint="@color/blue_primary"
-                android:gravity="center"
-                android:paddingHorizontal="32dp"
-                android:text="📷  Chọn từ thư viện"
-                android:textColor="@color/white"
-                android:textSize="15sp"
-                android:textStyle="bold" />
+            <SeekBar
+                android:id="@+id/seekBarMusic"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:progressTint="@color/blue_primary"
+                android:thumbTint="@color/blue_primary"/>
 
-            <!-- Remove Avatar Button -->
             <TextView
-                android:id="@+id/btnRemoveAvatar"
+                android:id="@+id/tvTotalTime"
                 android:layout_width="wrap_content"
-                android:layout_height="48dp"
-                android:layout_marginTop="12dp"
-                android:gravity="center"
-                android:paddingHorizontal="32dp"
-                android:text="Xóa ảnh đại diện"
-                android:textColor="@color/red_stop"
-                android:textSize="14sp" />
+                android:layout_height="wrap_content"
+                android:text="00:00"
+                android:textColor="#A0A0A0"
+                android:textSize="12sp" />
         </LinearLayout>
-    </ScrollView>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

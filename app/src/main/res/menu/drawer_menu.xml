@@ -28,7 +28,7 @@
             android:title="Tất cả nhiệm vụ" />
     </group>
 
-    <!-- Tiện ích mới: Danh bạ + Media -->
+    <!-- Tiện ích: Danh bạ + Nhạc + Hồ sơ -->
     <group android:id="@+id/main_group_utils">
         <item
             android:id="@+id/nav_contacts"
@@ -36,8 +36,12 @@
             android:title="📞 Danh bạ" />
         <item
             android:id="@+id/nav_media"
-            android:icon="@android:drawable/ic_menu_gallery"
-            android:title="🎵 Media" />
+            android:icon="@android:drawable/ic_media_play"
+            android:title="🎵 Nhạc" />
+        <item
+            android:id="@+id/nav_profile"
+            android:icon="@android:drawable/ic_menu_myplaces"
+            android:title="👤 Hồ sơ" />
     </group>
 
     <item android:id="@+id/nav_lists_header" android:title="Lists">

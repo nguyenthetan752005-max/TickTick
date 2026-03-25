@@ -10,13 +10,14 @@
     <string name="permission_contacts_required">Cần cấp quyền đọc danh bạ để sử dụng tính năng này</string>
     <string name="permission_call_required">Cần cấp quyền gọi điện</string>
 
-    <!-- Media -->
+    <!-- Music -->
+    <string name="title_music">Nhạc</string>
     <string name="title_media">Media</string>
-    <string name="tab_music">Nhạc</string>
-    <string name="tab_avatar">Ảnh đại diện</string>
     <string name="no_music">Không tìm thấy bài hát nào</string>
-    <string name="choose_avatar">Chọn ảnh đại diện</string>
-    <string name="avatar_updated">Đã cập nhật ảnh đại diện</string>
     <string name="now_playing">Đang phát</string>
     <string name="music_player">Trình phát nhạc</string>
+
+    <!-- Profile -->
+    <string name="choose_avatar">Chọn ảnh đại diện</string>
+    <string name="avatar_updated">Đã cập nhật ảnh đại diện</string>
 </resources>

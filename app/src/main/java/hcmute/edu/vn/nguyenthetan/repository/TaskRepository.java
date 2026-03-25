@@ -70,4 +70,8 @@ public class TaskRepository {
     public List<Task> getCompletedTasks() {
         return taskDao.getCompletedTasks();
     }
+
+    public List<Task> searchTasks(String keyword) {
+        return taskDao.searchTasks(keyword);
+    }
 }

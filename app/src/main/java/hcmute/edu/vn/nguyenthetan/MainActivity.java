@@ -8,6 +8,8 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.widget.EditText;
+import android.widget.PopupMenu;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -47,11 +49,13 @@ import hcmute.edu.vn.nguyenthetan.repository.CategoryRepository;
 import hcmute.edu.vn.nguyenthetan.service.ReminderService;
 import hcmute.edu.vn.nguyenthetan.view.MainViewModel;
 
-public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTaskClickListener, InboxAdapter.OnInboxItemClickListener {
+public class MainActivity extends AppCompatActivity
+        implements TaskAdapter.OnTaskClickListener, InboxAdapter.OnInboxItemClickListener {
 
     private static final int REQUEST_NOTIFICATION_PERMISSION = 1001;
     private static final String PREFS_NAME = "ticktick_prefs";
     private static final String KEY_AVATAR_URI = "avatar_uri";
+    private static final String KEY_DISPLAY_NAME = "display_name";
 
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
@@ -87,13 +91,14 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
         setupRecyclerView();
         setupMenuListeners();
         setupOnBackPressed();
-        
+
         // Quan sát dữ liệu Task (các filter khác)
         viewModel.getTasks().observe(this, tasks -> {
             if (viewModel.getCurrentFilterMode() != 0) {
-                if (rvTasks.getAdapter() != taskAdapter) rvTasks.setAdapter(taskAdapter);
+                if (rvTasks.getAdapter() != taskAdapter)
+                    rvTasks.setAdapter(taskAdapter);
                 updateTitleBar();
-                
+
                 if (tasks == null || tasks.isEmpty()) {
                     rvTasks.setVisibility(View.GONE);
                     layoutEmptyState.setVisibility(View.VISIBLE);
@@ -108,9 +113,10 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
         // Quan sát dữ liệu Inbox
         viewModel.getInboxData().observe(this, inboxItems -> {
             if (viewModel.getCurrentFilterMode() == 0) {
-                if (rvTasks.getAdapter() != inboxAdapter) rvTasks.setAdapter(inboxAdapter);
+                if (rvTasks.getAdapter() != inboxAdapter)
+                    rvTasks.setAdapter(inboxAdapter);
                 updateTitleBar();
-                
+
                 if (inboxItems == null || inboxItems.isEmpty()) {
                     rvTasks.setVisibility(View.GONE);
                     layoutEmptyState.setVisibility(View.VISIBLE);
@@ -137,10 +143,10 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
      */
     private void requestNotificationPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
-                    != PackageManager.PERMISSION_GRANTED) {
+            if (ContextCompat.checkSelfPermission(this,
+                    Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(this,
-                        new String[]{Manifest.permission.POST_NOTIFICATIONS},
+                        new String[] { Manifest.permission.POST_NOTIFICATIONS },
                         REQUEST_NOTIFICATION_PERMISSION);
             }
         }
@@ -172,7 +178,10 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
             // Fallback, see if there's a title TextView in normal bar
             // Normally TickTick clone has a TextView acting as app title
             // Let's assume there is one if not found we will just wrap it later.
-            try { tvAppTitle = (TextView) ((android.view.ViewGroup)layoutNormalBar).getChildAt(1); } catch(Exception e){}
+            try {
+                tvAppTitle = (TextView) ((android.view.ViewGroup) layoutNormalBar).getChildAt(1);
+            } catch (Exception e) {
+            }
         }
         btnCloseDeleteMode = findViewById(R.id.btnCloseDeleteMode);
         btnDeleteSelected = findViewById(R.id.btnDeleteSelected);
@@ -200,6 +209,44 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
         findViewById(R.id.btnMenu).setOnClickListener(v -> drawerLayout.openDrawer(GravityCompat.START));
         navigationView.setItemIconTintList(null);
 
+        // === Bottom Navigation Icons ===
+        findViewById(R.id.ivNavTasks).setOnClickListener(v -> {
+            viewModel.setFilterMode(5); // Tất cả nhiệm vụ
+        });
+
+        findViewById(R.id.ivNavCalendar).setOnClickListener(v -> {
+            viewModel.setFilterMode(1); // Hôm nay
+        });
+
+        findViewById(R.id.ivNavSettings).setOnClickListener(v -> {
+            drawerLayout.openDrawer(GravityCompat.START); // Mở Navigation Drawer
+        });
+
+        // === Top Bar: Nút More (Sắp xếp) ===
+        View btnMore = findViewById(R.id.btnMore);
+        btnMore.setOnClickListener(v -> {
+            PopupMenu popupMenu = new PopupMenu(this, v);
+            popupMenu.getMenuInflater().inflate(R.menu.menu_sort, popupMenu.getMenu());
+            popupMenu.setOnMenuItemClickListener(item -> {
+                int id = item.getItemId();
+                if (id == R.id.sort_by_name) {
+                    viewModel.sortCurrentTasks(0);
+                    Toast.makeText(this, "Sắp xếp theo tên", Toast.LENGTH_SHORT).show();
+                } else if (id == R.id.sort_by_deadline) {
+                    viewModel.sortCurrentTasks(1);
+                    Toast.makeText(this, "Sắp xếp theo deadline", Toast.LENGTH_SHORT).show();
+                } else if (id == R.id.sort_by_newest) {
+                    viewModel.sortCurrentTasks(2);
+                    Toast.makeText(this, "Mới tạo nhất", Toast.LENGTH_SHORT).show();
+                }
+                return true;
+            });
+            popupMenu.show();
+        });
+
+        // === Nav Header Icons ===
+        setupNavHeaderIcons();
+
         btnEnterDeleteMode.setOnClickListener(v -> {
             taskAdapter.startMultiSelect();
             updateContextualBar(true);
@@ -212,8 +259,9 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
 
         btnDeleteSelected.setOnClickListener(v -> {
             List<Task> selected = taskAdapter.getSelectedTasks();
-            if (selected.isEmpty()) return;
-            
+            if (selected.isEmpty())
+                return;
+
             new android.app.AlertDialog.Builder(this)
                     .setTitle("Xóa nhiệm vụ")
                     .setMessage("Bạn chắc chắn muốn xóa " + selected.size() + " nhiệm vụ này?")
@@ -245,7 +293,8 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
     }
 
     private void updateContextualBar(boolean isDeleteMode) {
-        if (layoutNormalBar == null || layoutDeleteBar == null) return;
+        if (layoutNormalBar == null || layoutDeleteBar == null)
+            return;
         layoutNormalBar.setVisibility(isDeleteMode ? View.GONE : View.VISIBLE);
         layoutDeleteBar.setVisibility(isDeleteMode ? View.VISIBLE : View.GONE);
         if (isDeleteMode) {
@@ -254,16 +303,31 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
     }
 
     private void updateTitleBar() {
-        if (tvAppTitle == null) return;
+        if (tvAppTitle == null)
+            return;
         int mode = viewModel.getCurrentFilterMode();
         switch (mode) {
-            case 0: tvAppTitle.setText("Hộp thư đến"); break;
-            case 1: tvAppTitle.setText("Hôm nay"); break;
-            case 2: tvAppTitle.setText("7 ngày kế tiếp"); break;
-            case 4: tvAppTitle.setText("Đã hoàn thành"); break;
-            case 5: tvAppTitle.setText("Tất cả nhiệm vụ"); break;
-            case 6: tvAppTitle.setText("Nhiệm vụ nháp"); break;
-            default: tvAppTitle.setText("Nhiệm vụ"); break;
+            case 0:
+                tvAppTitle.setText("Hộp thư đến");
+                break;
+            case 1:
+                tvAppTitle.setText("Hôm nay");
+                break;
+            case 2:
+                tvAppTitle.setText("7 ngày kế tiếp");
+                break;
+            case 4:
+                tvAppTitle.setText("Đã hoàn thành");
+                break;
+            case 5:
+                tvAppTitle.setText("Tất cả nhiệm vụ");
+                break;
+            case 6:
+                tvAppTitle.setText("Nhiệm vụ nháp");
+                break;
+            default:
+                tvAppTitle.setText("Nhiệm vụ");
+                break;
         }
     }
 
@@ -277,18 +341,28 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
     private void setupMenuListeners() {
         navigationView.setNavigationItemSelectedListener(item -> {
             int id = item.getItemId();
-            if (id == R.id.nav_today) viewModel.setFilterMode(1);
-            else if (id == R.id.nav_next_7_days) viewModel.setFilterMode(2);
-            else if (id == R.id.nav_inbox) viewModel.setFilterMode(0);
-            else if (id == R.id.nav_completed) viewModel.setFilterMode(4);
-            else if (id == R.id.nav_all) viewModel.setFilterMode(5);
-            else if (id == R.id.nav_drafts) viewModel.setFilterMode(6);
+            if (id == R.id.nav_today)
+                viewModel.setFilterMode(1);
+            else if (id == R.id.nav_next_7_days)
+                viewModel.setFilterMode(2);
+            else if (id == R.id.nav_inbox)
+                viewModel.setFilterMode(0);
+            else if (id == R.id.nav_completed)
+                viewModel.setFilterMode(4);
+            else if (id == R.id.nav_all)
+                viewModel.setFilterMode(5);
+            else if (id == R.id.nav_drafts)
+                viewModel.setFilterMode(6);
             else if (id == R.id.nav_contacts) {
                 startActivity(new Intent(this, ContactsActivity.class));
                 drawerLayout.closeDrawer(GravityCompat.START);
                 return true;
             } else if (id == R.id.nav_media) {
                 startActivity(new Intent(this, MediaActivity.class));
+                drawerLayout.closeDrawer(GravityCompat.START);
+                return true;
+            } else if (id == R.id.nav_profile) {
+                startActivity(new Intent(this, ProfileActivity.class));
                 drawerLayout.closeDrawer(GravityCompat.START);
                 return true;
             } else if (id == R.id.nav_add_list) {
@@ -329,7 +403,8 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
             Toast.makeText(this, "Nhiệm vụ đã hoàn thành, chỉ có thể chọn để xóa", Toast.LENGTH_SHORT).show();
             return;
         }
-        if (taskAdapter.getSelectedTasks().size() > 0) return;
+        if (taskAdapter.getSelectedTasks().size() > 0)
+            return;
         List<Category> categories = categoryRepository.getAllCategories();
         TaskDialogHelper.showTaskDialog(this, categories, task,
                 (TaskDialogHelper.TaskCallback) (updatedTask, pendingReminders) -> {
@@ -382,28 +457,101 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
     @Override
     protected void onResume() {
         super.onResume();
-        loadProfileAvatar();
+        loadProfileHeaderInfo();
     }
 
     /**
-     * Tải ảnh đại diện từ SharedPreferences vào nav header.
+     * Thiết lập click listener cho các icon trên Nav Header.
      */
-    private void loadProfileAvatar() {
+    private void setupNavHeaderIcons() {
         View headerView = navigationView.getHeaderView(0);
-        if (headerView == null) return;
+        if (headerView == null)
+            return;
+
+        // Icon Tìm kiếm
+        View ivSearch = headerView.findViewById(R.id.ivSearch);
+        if (ivSearch != null) {
+            ivSearch.setOnClickListener(v -> {
+                drawerLayout.closeDrawer(GravityCompat.START);
+                showSearchDialog();
+            });
+        }
+
+        // Icon Thông báo → chuyển về Inbox
+        View ivNotification = headerView.findViewById(R.id.ivNotification);
+        if (ivNotification != null) {
+            ivNotification.setOnClickListener(v -> {
+                drawerLayout.closeDrawer(GravityCompat.START);
+                viewModel.setFilterMode(0); // Inbox
+            });
+        }
+
+        // Avatar → mở Profile
+        View ivProfile = headerView.findViewById(R.id.ivProfile);
+        if (ivProfile != null) {
+            ivProfile.setOnClickListener(v -> {
+                drawerLayout.closeDrawer(GravityCompat.START);
+                startActivity(new Intent(this, ProfileActivity.class));
+            });
+        }
+    }
+
+    /**
+     * Hiện dialog tìm kiếm task theo tên.
+     */
+    private void showSearchDialog() {
+        EditText etSearch = new EditText(this);
+        etSearch.setHint("Nhập tên nhiệm vụ...");
+        etSearch.setPadding(48, 32, 48, 32);
+
+        new android.app.AlertDialog.Builder(this)
+                .setTitle("🔍 Tìm kiếm nhiệm vụ")
+                .setView(etSearch)
+                .setPositiveButton("Tìm", (d, w) -> {
+                    String keyword = etSearch.getText().toString().trim();
+                    if (!keyword.isEmpty()) {
+                        viewModel.searchTasks(keyword);
+                        if (tvAppTitle != null)
+                            tvAppTitle.setText("Kết quả: \"" + keyword + "\"");
+                    }
+                })
+                .setNegativeButton("Hủy", null)
+                .show();
+
+        etSearch.requestFocus();
+    }
+
+    /**
+     * Tải ảnh đại diện và tên người dùng từ SharedPreferences vào nav header.
+     */
+    private void loadProfileHeaderInfo() {
+        View headerView = navigationView.getHeaderView(0);
+        if (headerView == null)
+            return;
+
         ImageView ivProfile = headerView.findViewById(R.id.ivProfile);
-        if (ivProfile == null) return;
+        TextView tvUserName = headerView.findViewById(R.id.tvUserName);
 
         SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-        String uriStr = prefs.getString(KEY_AVATAR_URI, null);
-        if (uriStr != null) {
-            try {
-                ivProfile.setImageURI(Uri.parse(uriStr));
-            } catch (Exception e) {
+
+        // Load Avatar
+        if (ivProfile != null) {
+            String uriStr = prefs.getString(KEY_AVATAR_URI, null);
+            if (uriStr != null) {
+                try {
+                    ivProfile.setImageURI(Uri.parse(uriStr));
+                } catch (Exception e) {
+                    ivProfile.setImageResource(android.R.drawable.ic_menu_gallery);
+                }
+            } else {
                 ivProfile.setImageResource(android.R.drawable.ic_menu_gallery);
             }
-        } else {
-            ivProfile.setImageResource(android.R.drawable.ic_menu_gallery);
+        }
+
+        // Load Tên người dùng (Mặc định là Nguyễn Thế Tân nếu chưa lưu)
+        if (tvUserName != null) {
+            String name = prefs.getString(KEY_DISPLAY_NAME, "Nguyễn Thế Tân");
+            tvUserName.setText(name);
         }
     }
 }

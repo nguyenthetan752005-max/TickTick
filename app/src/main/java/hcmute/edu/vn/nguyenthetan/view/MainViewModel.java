@@ -243,4 +243,37 @@ public class MainViewModel extends AndroidViewModel {
         }
         return dueDate - offset;
     }
+
+    /**
+     * Tìm kiếm task theo từ khóa.
+     */
+    public void searchTasks(String keyword) {
+        new Thread(() -> {
+            List<Task> result = taskRepository.searchTasks(keyword);
+            tasks.postValue(result);
+        }).start();
+    }
+
+    /**
+     * Sắp xếp danh sách task hiện tại theo tiêu chí.
+     * 0 = theo tên (A-Z), 1 = theo ngày (gần nhất trước), 2 = theo ngày tạo (mới nhất)
+     */
+    public void sortCurrentTasks(int sortMode) {
+        List<Task> currentTasks = tasks.getValue();
+        if (currentTasks == null || currentTasks.isEmpty()) return;
+
+        java.util.List<Task> sorted = new java.util.ArrayList<>(currentTasks);
+        switch (sortMode) {
+            case 0: // Tên A-Z
+                java.util.Collections.sort(sorted, (a, b) -> a.getName().compareToIgnoreCase(b.getName()));
+                break;
+            case 1: // Deadline gần nhất
+                java.util.Collections.sort(sorted, (a, b) -> Long.compare(a.getDueDate(), b.getDueDate()));
+                break;
+            case 2: // Mới tạo nhất (ID giảm dần)
+                java.util.Collections.sort(sorted, (a, b) -> Integer.compare(b.getId(), a.getId()));
+                break;
+        }
+        tasks.postValue(sorted);
+    }
 }

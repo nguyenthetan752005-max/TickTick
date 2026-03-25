@@ -111,6 +111,26 @@ public class MusicPlayerService extends Service {
         return mediaPlayer != null && mediaPlayer.isPlaying();
     }
 
+    public int getCurrentPosition() {
+        if (mediaPlayer != null) {
+            return mediaPlayer.getCurrentPosition();
+        }
+        return 0;
+    }
+
+    public int getDuration() {
+        if (mediaPlayer != null) {
+            return mediaPlayer.getDuration();
+        }
+        return 0;
+    }
+
+    public void seekTo(int position) {
+        if (mediaPlayer != null) {
+            mediaPlayer.seekTo(position);
+        }
+    }
+
     public String getCurrentTitle() {
         return currentTitle;
     }

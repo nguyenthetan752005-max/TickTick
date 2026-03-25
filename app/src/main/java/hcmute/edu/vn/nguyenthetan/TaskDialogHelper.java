@@ -77,9 +77,17 @@ public class TaskDialogHelper {
             behavior.setSkipCollapsed(true);
 
             ViewCompat.setOnApplyWindowInsetsListener(bottomSheet, (v, insets) -> {
+                // 1. Lấy chiều cao của bàn phím
                 int keyboardHeight = insets.getInsets(WindowInsetsCompat.Type.ime()).bottom;
-                v.setPadding(0, 0, 0, keyboardHeight);
-                return insets;
+
+                // 2. Lấy chiều cao của thanh điều hướng (Navigation Bar) dưới đáy
+                int navBarHeight = insets.getInsets(WindowInsetsCompat.Type.systemBars()).bottom;
+
+                // 3. Lấy giá trị lớn hơn làm padding (Nếu có phím thì đẩy lên theo phím, không phím thì đẩy theo thanh điều hướng)
+                int bottomPadding = Math.max(keyboardHeight, navBarHeight);
+
+                v.setPadding(0, 0, 0, bottomPadding);
+                return WindowInsetsCompat.CONSUMED;
             });
         }
 
@@ -356,6 +364,7 @@ public class TaskDialogHelper {
         });
 
         dialog.show();
+        dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
         etName.requestFocus();
     }
 

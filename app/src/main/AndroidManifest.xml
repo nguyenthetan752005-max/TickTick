@@ -47,9 +47,15 @@
             android:theme="@style/Theme.TickTick"
             android:exported="false" />
 
-        <!-- Activity Media -->
+        <!-- Activity Media (Music) -->
         <activity
             android:name=".MediaActivity"
+            android:theme="@style/Theme.TickTick"
+            android:exported="false" />
+
+        <!-- Activity Profile -->
+        <activity
+            android:name=".ProfileActivity"
             android:theme="@style/Theme.TickTick"
             android:exported="false" />
 
@@ -76,6 +82,20 @@
             android:name=".provider.TaskContentProvider"
             android:authorities="hcmute.edu.vn.nguyenthetan.provider"
             android:exported="true" />
+
+        <!-- BroadcastReceiver nhận alarm từ AlarmManager để hiện thông báo nhắc nhở -->
+        <receiver
+            android:name=".receiver.ReminderBroadcastReceiver"
+            android:exported="false" />
+
+        <!-- BroadcastReceiver lên lịch lại reminders sau khi thiết bị khởi động lại -->
+        <receiver
+            android:name=".receiver.BootReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
 
     </application>
 
