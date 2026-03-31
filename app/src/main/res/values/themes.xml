@@ -5,7 +5,77 @@
         <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
     </style>
 
-    <style name="Theme.TickTick" parent="Base.Theme.TickTick" />
+    <!-- Theme 0: Default (Current Colors) -->
+    <style name="Theme.TickTick.Default" parent="Base.Theme.TickTick">
+        <item name="themeBgDark">@color/background_dark</item>
+        <item name="themeNavBg">@color/nav_background</item>
+        <item name="themeCardDark">@color/card_dark</item>
+        <item name="themeSurfaceElevated">@color/surface_elevated</item>
+        <item name="themePrimary">@color/blue_primary</item>
+        <item name="themePrimaryLight">@color/blue_light</item>
+        <item name="themeTextWhite">@color/white</item>
+        <item name="themeTextSecondary">@color/text_secondary</item>
+        <item name="themeTextTertiary">@color/text_tertiary</item>
+        <item name="themeCornerRadius">@dimen/radius_default</item>
+    </style>
+
+    <!-- Theme 1: Summer -->
+    <style name="Theme.TickTick.Summer" parent="Base.Theme.TickTick">
+        <item name="themeBgDark">@color/summer_bg</item>
+        <item name="themeNavBg">@color/summer_nav_bg</item>
+        <item name="themeCardDark">@color/summer_card</item>
+        <item name="themeSurfaceElevated">@color/summer_surface</item>
+        <item name="themePrimary">@color/summer_primary</item>
+        <item name="themePrimaryLight">@color/summer_primary_light</item>
+        <item name="themeTextWhite">@color/summer_text_main</item>
+        <item name="themeTextSecondary">@color/text_secondary</item>
+        <item name="themeTextTertiary">@color/text_tertiary</item>
+        <item name="themeCornerRadius">@dimen/radius_summer</item>
+    </style>
+
+    <!-- Theme 2: Hell -->
+    <style name="Theme.TickTick.Hell" parent="Base.Theme.TickTick">
+        <item name="themeBgDark">@color/hell_bg</item>
+        <item name="themeNavBg">@color/hell_nav_bg</item>
+        <item name="themeCardDark">@color/hell_card</item>
+        <item name="themeSurfaceElevated">@color/hell_surface</item>
+        <item name="themePrimary">@color/hell_primary</item>
+        <item name="themePrimaryLight">@color/hell_primary_light</item>
+        <item name="themeTextWhite">@color/hell_text_main</item>
+        <item name="themeTextSecondary">@color/text_secondary</item>
+        <item name="themeTextTertiary">@color/text_tertiary</item>
+        <item name="themeCornerRadius">@dimen/radius_hell</item>
+    </style>
+
+    <!-- Theme 3: Winter -->
+    <style name="Theme.TickTick.Winter" parent="Base.Theme.TickTick">
+        <item name="themeBgDark">@color/winter_bg</item>
+        <item name="themeNavBg">@color/winter_nav_bg</item>
+        <item name="themeCardDark">@color/winter_card</item>
+        <item name="themeSurfaceElevated">@color/winter_surface</item>
+        <item name="themePrimary">@color/winter_primary</item>
+        <item name="themePrimaryLight">@color/winter_primary_light</item>
+        <item name="themeTextWhite">@color/winter_text_main</item>
+        <item name="themeTextSecondary">#B0BEC5</item>
+        <item name="themeTextTertiary">#90A4AE</item>
+        <item name="themeCornerRadius">@dimen/radius_winter</item>
+    </style>
+
+    <!-- Theme 4: Neon -->
+    <style name="Theme.TickTick.Neon" parent="Base.Theme.TickTick">
+        <item name="themeBgDark">@color/neon_bg</item>
+        <item name="themeNavBg">@color/neon_nav_bg</item>
+        <item name="themeCardDark">@color/neon_card</item>
+        <item name="themeSurfaceElevated">@color/neon_surface</item>
+        <item name="themePrimary">@color/neon_primary</item>
+        <item name="themePrimaryLight">@color/neon_primary_light</item>
+        <item name="themeTextWhite">@color/neon_text_main</item>
+        <item name="themeTextSecondary">#E040FB</item>
+        <item name="themeTextTertiary">#18FFFF</item>
+        <item name="themeCornerRadius">@dimen/radius_neon</item>
+    </style>
+
+    <style name="Theme.TickTick" parent="Theme.TickTick.Default" />
 
     <style name="CircleImage">
         <item name="cornerSize">50%</item>

@@ -1,7 +1,6 @@
 package hcmute.edu.vn.nguyenthetan;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
@@ -13,9 +12,6 @@ import androidx.activity.EdgeToEdge;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
 import com.yalantis.ucrop.UCrop;
 
@@ -28,14 +24,7 @@ import java.io.OutputStream;
  * ProfileActivity: Màn hình hồ sơ cá nhân.
  * Cho phép xem/sửa tên, email, ghi chú, và ảnh đại diện.
  */
-public class ProfileActivity extends AppCompatActivity {
-
-    private static final String PREFS_NAME = "ticktick_prefs";
-    private static final String KEY_AVATAR_URI = "avatar_uri";
-    private static final String KEY_DISPLAY_NAME = "display_name";
-    private static final String KEY_EMAIL = "user_email";
-    private static final String KEY_BIO = "user_bio";
-
+public class ProfileActivity extends BaseActivity {
     private ImageView ivProfileAvatar;
     private EditText etDisplayName, etEmail, etBio;
 
@@ -49,20 +38,7 @@ public class ProfileActivity extends AppCompatActivity {
         setContentView(R.layout.activity_profile);
 
         View mainView = findViewById(android.R.id.content);
-        ViewCompat.setOnApplyWindowInsetsListener(mainView, (v, insets) -> {
-            // Lấy padding của cả system bars (status bar, nav bar) VÀ bàn phím (ime)
-            Insets systemBarsAndIme = insets.getInsets(
-                    WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.ime()
-            );
-
-            v.setPadding(
-                    systemBarsAndIme.left,
-                    systemBarsAndIme.top,
-                    systemBarsAndIme.right,
-                    systemBarsAndIme.bottom
-            );
-            return WindowInsetsCompat.CONSUMED;
-        });
+        hcmute.edu.vn.nguyenthetan.util.EdgeInsetsUtil.applySystemBarsAndImePadding(mainView);
 
         initViews();
         setupAvatarPicker();
@@ -85,8 +61,7 @@ public class ProfileActivity extends AppCompatActivity {
         // Xóa ảnh đại diện
         findViewById(R.id.btnRemoveAvatar).setOnClickListener(v -> {
             ivProfileAvatar.setImageResource(android.R.drawable.ic_menu_gallery);
-            SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-            prefs.edit().remove(KEY_AVATAR_URI).apply();
+            hcmute.edu.vn.nguyenthetan.util.ProfilePrefsUtil.removeAvatar(this);
             Toast.makeText(this, "Đã xóa ảnh đại diện", Toast.LENGTH_SHORT).show();
         });
 
@@ -149,9 +124,10 @@ public class ProfileActivity extends AppCompatActivity {
                         if (resultUri != null) {
                             ivProfileAvatar.setImageURI(null); // xóa cache
                             ivProfileAvatar.setImageURI(resultUri);
-
-                            SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-                            prefs.edit().putString(KEY_AVATAR_URI, resultUri.toString()).apply();
+                            hcmute.edu.vn.nguyenthetan.util.ProfilePrefsUtil.saveAvatarUri(
+                                    this,
+                                    resultUri.toString()
+                            );
 
                             Toast.makeText(this, R.string.avatar_updated, Toast.LENGTH_SHORT).show();
                         }
@@ -168,26 +144,13 @@ public class ProfileActivity extends AppCompatActivity {
      * Tải dữ liệu profile đã lưu từ SharedPreferences.
      */
     private void loadProfileData() {
-        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-
-        // Avatar
-        String avatarUri = prefs.getString(KEY_AVATAR_URI, null);
-        if (avatarUri != null) {
-            try {
-                ivProfileAvatar.setImageURI(Uri.parse(avatarUri));
-            } catch (Exception e) {
-                ivProfileAvatar.setImageResource(android.R.drawable.ic_menu_gallery);
-            }
-        }
-
-        // Thông tin cá nhân - Cung cấp giá trị mặc định nếu chưa có
-        String name = prefs.getString(KEY_DISPLAY_NAME, "Nguyễn Thế Tân");
-        String email = prefs.getString(KEY_EMAIL, "thetan.nguyen@example.com");
-        String bio = prefs.getString(KEY_BIO, "Yêu thích sự gọn gàng và lập trình di động.");
-
-        etDisplayName.setText(name);
-        etEmail.setText(email);
-        etBio.setText(bio);
+        hcmute.edu.vn.nguyenthetan.util.ProfilePrefsUtil.loadProfileData(
+                this,
+                ivProfileAvatar,
+                etDisplayName,
+                etEmail,
+                etBio
+        );
     }
 
     /**
@@ -205,12 +168,7 @@ public class ProfileActivity extends AppCompatActivity {
             return; // Dừng hàm ngay lập tức, các lệnh lưu bên dưới sẽ không được chạy
         }
 
-        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.putString(KEY_DISPLAY_NAME, name);
-        editor.putString(KEY_EMAIL, email);
-        editor.putString(KEY_BIO, bio);
-        editor.apply();
+        hcmute.edu.vn.nguyenthetan.util.ProfilePrefsUtil.saveProfileData(this, name, email, bio);
 
         Toast.makeText(this, "✅ Đã lưu thông tin hồ sơ", Toast.LENGTH_SHORT).show();
     }

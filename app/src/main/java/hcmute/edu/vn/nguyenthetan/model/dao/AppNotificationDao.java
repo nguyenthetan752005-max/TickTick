@@ -3,6 +3,7 @@ package hcmute.edu.vn.nguyenthetan.model.dao;
 import androidx.room.Dao;
 import androidx.room.Delete;
 import androidx.room.Insert;
+import androidx.lifecycle.LiveData;
 import androidx.room.Query;
 import androidx.room.Update;
 
@@ -22,11 +23,14 @@ public interface AppNotificationDao {
     void delete(AppNotification notification);
 
     @Query("SELECT * FROM notifications ORDER BY timestamp DESC")
-    List<AppNotification> getAllNotifications();
+    LiveData<List<AppNotification>> getAllNotifications();
 
     @Query("SELECT * FROM notifications WHERE isRead = 0 ORDER BY timestamp DESC")
-    List<AppNotification> getUnreadNotifications();
+    LiveData<List<AppNotification>> getUnreadNotifications();
     
     @Query("DELETE FROM notifications WHERE id = :notificationId")
     void deleteById(int notificationId);
+
+    @Query("DELETE FROM notifications")
+    void deleteAll();
 }

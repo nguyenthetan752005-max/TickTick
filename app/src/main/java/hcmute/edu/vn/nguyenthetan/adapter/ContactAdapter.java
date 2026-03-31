@@ -13,18 +13,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import hcmute.edu.vn.nguyenthetan.R;
+import hcmute.edu.vn.nguyenthetan.model.Contact;
 
 public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ContactViewHolder> {
-
-    public static class Contact {
-        public String name;
-        public String phone;
-
-        public Contact(String name, String phone) {
-            this.name = name;
-            this.phone = phone;
-        }
-    }
 
     public interface OnContactActionListener {
         void onCallClick(Contact contact);
@@ -52,7 +43,7 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ContactV
         } else {
             String lower = query.toLowerCase().trim();
             for (Contact c : contactsFull) {
-                if (c.name.toLowerCase().contains(lower) || c.phone.contains(lower)) {
+                if (c.getName().toLowerCase().contains(lower) || c.getPhone().contains(lower)) {
                     contacts.add(c);
                 }
             }
@@ -72,12 +63,13 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ContactV
     public void onBindViewHolder(@NonNull ContactViewHolder holder, int position) {
         Contact contact = contacts.get(position);
 
-        // Avatar - first letter of name
-        String initial = contact.name.isEmpty() ? "?" : contact.name.substring(0, 1).toUpperCase();
+        // Avatar - chữ cái đầu tiên của tên
+        String name = contact.getName();
+        String initial = (name == null || name.isEmpty()) ? "?" : name.substring(0, 1).toUpperCase();
         holder.tvAvatar.setText(initial);
 
-        holder.tvContactName.setText(contact.name);
-        holder.tvContactPhone.setText(contact.phone);
+        holder.tvContactName.setText(contact.getName());
+        holder.tvContactPhone.setText(contact.getPhone());
 
         holder.btnCall.setOnClickListener(v -> {
             if (listener != null) listener.onCallClick(contact);

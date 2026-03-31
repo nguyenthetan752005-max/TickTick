@@ -16,9 +16,9 @@
         android:id="@+id/tvEmptyStateTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:text="Không có nhiệm vụ"
-        android:textColor="@color/text_secondary"
+        android:layout_marginTop="@dimen/spacing_xl"
+        android:text="@string/empty_tasks_title"
+        android:textColor="?attr/themeTextSecondary"
         android:textSize="18sp"
         android:textStyle="bold" />
 
@@ -26,9 +26,9 @@
         android:id="@+id/tvEmptyStateDescription"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="Nhấn vào nút + để thêm"
-        android:textColor="@color/text_secondary"
+        android:layout_marginTop="@dimen/spacing_m"
+        android:text="@string/empty_tasks_description"
+        android:textColor="?attr/themeTextSecondary"
         android:textSize="14sp" />
 
 </LinearLayout>

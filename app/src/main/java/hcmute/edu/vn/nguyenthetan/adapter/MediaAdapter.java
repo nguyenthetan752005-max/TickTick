@@ -26,8 +26,8 @@ public class MediaAdapter extends RecyclerView.Adapter<MediaAdapter.MusicViewHol
         public Uri uri;
 
         public MusicItem(String title, String artist, long duration, Uri uri) {
-            this.title = title;
-            this.artist = artist;
+            this.title = title != null ? title : "Không tiêu đề";
+            this.artist = artist != null ? artist : "Không rõ";
             this.duration = duration;
             this.uri = uri;
         }
@@ -41,6 +41,7 @@ public class MediaAdapter extends RecyclerView.Adapter<MediaAdapter.MusicViewHol
     private List<MusicItem> items = new ArrayList<>();
     private OnMusicClickListener listener;
     private int currentPlayingPosition = -1;
+    private boolean isActuallyPlaying = false;
 
     public MediaAdapter(OnMusicClickListener listener) {
         this.listener = listener;
@@ -51,9 +52,10 @@ public class MediaAdapter extends RecyclerView.Adapter<MediaAdapter.MusicViewHol
         notifyDataSetChanged();
     }
 
-    public void setCurrentPlaying(int position) {
+    public void setCurrentPlaying(int position, boolean isPlaying) {
         int old = currentPlayingPosition;
         currentPlayingPosition = position;
+        isActuallyPlaying = isPlaying;
         if (old >= 0 && old < items.size()) notifyItemChanged(old);
         if (position >= 0 && position < items.size()) notifyItemChanged(position);
     }
@@ -71,25 +73,29 @@ public class MediaAdapter extends RecyclerView.Adapter<MediaAdapter.MusicViewHol
         MusicItem item = items.get(position);
 
         holder.tvSongTitle.setText(item.title);
-        holder.tvSongArtist.setText(item.artist != null ? item.artist : "Không rõ");
+        holder.tvSongArtist.setText(item.artist);
         holder.tvDuration.setText(formatDuration(item.duration));
 
-        boolean isPlaying = position == currentPlayingPosition;
-        holder.btnPlayPause.setImageResource(
-                isPlaying ? android.R.drawable.ic_media_pause : android.R.drawable.ic_media_play);
-        holder.ivMusicIcon.setImageResource(
-                isPlaying ? android.R.drawable.ic_media_pause : android.R.drawable.ic_media_play);
-
-        // Hiển thị nút thùng rác nếu là nhạc tải lên (từ file nội bộ)
-        if (item.uri != null && "file".equals(item.uri.getScheme())) {
-            holder.btnDeleteMusic.setVisibility(View.VISIBLE);
+        boolean isCurrent = (position == currentPlayingPosition);
+        
+        // Cập nhật icon dựa trên trạng thái phát thực tế
+        if (isCurrent && isActuallyPlaying) {
+            holder.ivMusicIcon.setImageResource(android.R.drawable.ic_media_pause);
         } else {
-            holder.btnDeleteMusic.setVisibility(View.GONE);
+            holder.ivMusicIcon.setImageResource(android.R.drawable.ic_media_play);
         }
 
-        holder.btnPlayPause.setOnClickListener(v -> {
-            if (listener != null) listener.onPlayPauseClick(item, holder.getAdapterPosition());
-        });
+        // Hiển thị nút xóa cho nhạc đã tải lên (file://)
+        boolean isUserUploadedMusic = false;
+        if (item.uri != null) {
+            String scheme = item.uri.getScheme();
+            String path = item.uri.getPath();
+            isUserUploadedMusic = "file".equals(scheme) || (path != null && path.contains("uploaded_music"));
+        }
+        
+        holder.btnDeleteMusic.setVisibility(isUserUploadedMusic ? View.VISIBLE : View.GONE);
+
+
 
         holder.btnDeleteMusic.setOnClickListener(v -> {
             if (listener != null) listener.onDeleteClick(item, holder.getAdapterPosition());
@@ -112,7 +118,7 @@ public class MediaAdapter extends RecyclerView.Adapter<MediaAdapter.MusicViewHol
     }
 
     static class MusicViewHolder extends RecyclerView.ViewHolder {
-        ImageView ivMusicIcon, btnPlayPause, btnDeleteMusic;
+        ImageView ivMusicIcon, btnDeleteMusic;
         TextView tvSongTitle, tvSongArtist, tvDuration;
 
         MusicViewHolder(@NonNull View itemView) {
@@ -121,7 +127,7 @@ public class MediaAdapter extends RecyclerView.Adapter<MediaAdapter.MusicViewHol
             tvSongTitle = itemView.findViewById(R.id.tvSongTitle);
             tvSongArtist = itemView.findViewById(R.id.tvSongArtist);
             tvDuration = itemView.findViewById(R.id.tvDuration);
-            btnPlayPause = itemView.findViewById(R.id.btnPlayPause);
+
             btnDeleteMusic = itemView.findViewById(R.id.btnDeleteMusic);
         }
     }

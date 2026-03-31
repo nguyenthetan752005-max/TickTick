@@ -4,7 +4,7 @@
     android:id="@+id/bottomNavigationContainer"
     android:layout_width="match_parent"
     android:layout_height="60dp"
-    android:background="@color/black"
+    android:background="?attr/themeBgDark"
     android:gravity="center"
     android:orientation="horizontal"
     android:paddingHorizontal="24dp">
@@ -15,7 +15,7 @@
         android:layout_height="24dp"
         android:layout_weight="1"
         android:src="@android:drawable/checkbox_on_background"
-        app:tint="@color/blue_primary" />
+        app:tint="?attr/themePrimary" />
 
     <ImageView
         android:id="@+id/ivNavCalendar"
@@ -23,7 +23,7 @@
         android:layout_height="24dp"
         android:layout_weight="1"
         android:src="@android:drawable/ic_menu_today"
-        app:tint="@color/text_secondary" />
+        app:tint="?attr/themeTextSecondary" />
 
     <ImageView
         android:id="@+id/ivNavSettings"
@@ -31,6 +31,6 @@
         android:layout_height="24dp"
         android:layout_weight="1"
         android:src="@android:drawable/ic_menu_manage"
-        app:tint="@color/text_secondary" />
+        app:tint="?attr/themeTextSecondary" />
 
 </LinearLayout>

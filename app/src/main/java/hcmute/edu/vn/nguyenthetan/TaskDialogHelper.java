@@ -21,10 +21,6 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
-
-import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 
 import java.text.SimpleDateFormat;
@@ -38,6 +34,11 @@ import hcmute.edu.vn.nguyenthetan.model.Category;
 import hcmute.edu.vn.nguyenthetan.model.Reminder;
 import hcmute.edu.vn.nguyenthetan.model.Task;
 import hcmute.edu.vn.nguyenthetan.repository.ReminderRepository;
+import hcmute.edu.vn.nguyenthetan.ui.taskdialog.ReminderItemViewFactory;
+import hcmute.edu.vn.nguyenthetan.ui.taskdialog.ReminderTimeCalculator;
+import hcmute.edu.vn.nguyenthetan.ui.taskdialog.AddReminderBottomSheet;
+import hcmute.edu.vn.nguyenthetan.ui.taskdialog.BottomSheetConfigurer;
+import hcmute.edu.vn.nguyenthetan.ui.taskdialog.ReminderSyncManager;
 
 public class TaskDialogHelper {
 
@@ -72,23 +73,7 @@ public class TaskDialogHelper {
         // THIẾT LẬP ĐỂ ĐẨY DIALOG KHI BÀN PHÍM HIỆN LÊN
         View bottomSheet = dialog.findViewById(com.google.android.material.R.id.design_bottom_sheet);
         if (bottomSheet != null) {
-            BottomSheetBehavior<View> behavior = BottomSheetBehavior.from(bottomSheet);
-            behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
-            behavior.setSkipCollapsed(true);
-
-            ViewCompat.setOnApplyWindowInsetsListener(bottomSheet, (v, insets) -> {
-                // 1. Lấy chiều cao của bàn phím
-                int keyboardHeight = insets.getInsets(WindowInsetsCompat.Type.ime()).bottom;
-
-                // 2. Lấy chiều cao của thanh điều hướng (Navigation Bar) dưới đáy
-                int navBarHeight = insets.getInsets(WindowInsetsCompat.Type.systemBars()).bottom;
-
-                // 3. Lấy giá trị lớn hơn làm padding (Nếu có phím thì đẩy lên theo phím, không phím thì đẩy theo thanh điều hướng)
-                int bottomPadding = Math.max(keyboardHeight, navBarHeight);
-
-                v.setPadding(0, 0, 0, bottomPadding);
-                return WindowInsetsCompat.CONSUMED;
-            });
+            BottomSheetConfigurer.configureExpandedWithImePadding(bottomSheet);
         }
 
         // Cập nhật tiêu đề dựa trên chế độ (Thêm/Sửa)
@@ -299,7 +284,7 @@ public class TaskDialogHelper {
                     }
                 }
                 for (PendingReminder pr : pendingReminders) {
-                    if (calculateReminderTime(deadlineTime, pr.value, pr.unitIndex) == deadlineTime) hasAtDeadline = true;
+                    if (ReminderTimeCalculator.calculateReminderTime(deadlineTime, pr.value, pr.unitIndex) == deadlineTime) hasAtDeadline = true;
                 }
                 if (!hasAtDeadline) {
                     PendingReminder implicitReminder = new PendingReminder(0, 0, deadlineTime, "Tại thời điểm đến hạn");
@@ -310,7 +295,7 @@ public class TaskDialogHelper {
             // Kiểm tra tất cả pending reminders vẫn hợp lệ với deadline hiện tại
             for (int i = pendingReminders.size() - 1; i >= 0; i--) {
                 PendingReminder pr = pendingReminders.get(i);
-                long recalculated = calculateReminderTime(deadlineTime, pr.value, pr.unitIndex);
+                long recalculated = ReminderTimeCalculator.calculateReminderTime(deadlineTime, pr.value, pr.unitIndex);
                 if (recalculated <= System.currentTimeMillis()) {
                     Toast.makeText(context,
                             "Nhắc nhở \"" + pr.displayText + "\" không còn hợp lệ (trong quá khứ). Vui lòng xóa hoặc chỉnh sửa.",
@@ -331,32 +316,13 @@ public class TaskDialogHelper {
                 existingTask.setCategoryId(catId);
                 existingTask.setDueDate(deadlineTime);
 
-                // Xử lý xóa reminders đã bị remove khỏi UI
-                new Thread(() -> {
-                    ReminderRepository repo = new ReminderRepository(context);
-                    List<Reminder> currentDbReminders = repo.getRemindersByTaskId(existingTask.getId());
-                    for (Reminder dbReminder : currentDbReminders) {
-                        boolean stillExists = false;
-                        for (Reminder er : existingReminders) {
-                            if (er.getId() == dbReminder.getId()) {
-                                stillExists = true;
-                                break;
-                            }
-                        }
-                        if (!stillExists) {
-                            repo.deleteReminder(dbReminder);
-                        }
-                    }
-
-                    // Thêm pending reminders mới
-                    for (PendingReminder pr : pendingReminders) {
-                        long reminderTime = calculateReminderTime(deadlineTime, pr.value, pr.unitIndex);
-                        Reminder reminder = new Reminder(existingTask.getId(), reminderTime);
-                        long id = repo.addReminder(reminder);
-                        reminder.setId((int) id);
-                        repo.scheduleReminder(reminder, existingTask.getName());
-                    }
-                }).start();
+                ReminderSyncManager.syncEditedTaskRemindersAsync(
+                        context,
+                        existingTask,
+                        existingReminders,
+                        pendingReminders,
+                        deadlineTime
+                );
 
                 callback.onSave(existingTask, pendingReminders);
             }
@@ -388,139 +354,25 @@ public class TaskDialogHelper {
      * Hiển thị dialog thêm nhắc nhở.
      */
     private static void showAddReminderDialog(Context context, long dueDate, OnReminderAddedListener listener) {
-        BottomSheetDialog reminderDialog = new BottomSheetDialog(context, R.style.CustomDialogTheme);
-        View view = LayoutInflater.from(context).inflate(R.layout.dialog_add_reminder, null);
-        reminderDialog.setContentView(view);
-
-        EditText etValue = view.findViewById(R.id.etReminderValue);
-        Spinner spUnit = view.findViewById(R.id.spReminderUnit);
-        TextView tvPreview = view.findViewById(R.id.tvReminderPreview);
-        View btnSave = view.findViewById(R.id.btnSaveReminder);
-        View btnCancel = view.findViewById(R.id.btnCancelReminder);
-
-        String[] units = {"Phút trước", "Giờ trước", "Ngày trước"};
-        ArrayAdapter<String> unitAdapter = new ArrayAdapter<>(context, R.layout.spinner_item_dark, units);
-        unitAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spUnit.setAdapter(unitAdapter);
-
-        SimpleDateFormat sdfFull = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
-
-        Runnable updatePreview = () -> {
-            String valStr = etValue.getText().toString().trim();
-            if (valStr.isEmpty()) {
-                tvPreview.setText("Thời gian nhắc nhở: --");
-                return;
-            }
-            try {
-                int value = Integer.parseInt(valStr);
-                int unitIndex = spUnit.getSelectedItemPosition();
-                long reminderTime = calculateReminderTime(dueDate, value, unitIndex);
-
-                if (reminderTime <= System.currentTimeMillis()) {
-                    tvPreview.setText("⚠️ Thời gian nhắc nhở trong quá khứ!");
-                } else if (reminderTime >= dueDate) {
-                    tvPreview.setText("⚠️ Nhắc nhở phải trước deadline!");
-                } else {
-                    tvPreview.setText("Nhắc nhở lúc: " + sdfFull.format(new Date(reminderTime)));
-                }
-            } catch (NumberFormatException e) {
-                tvPreview.setText("Vui lòng nhập số hợp lệ");
-            }
-        };
-
-        etValue.addTextChangedListener(new android.text.TextWatcher() {
-            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
-            @Override public void afterTextChanged(android.text.Editable s) { updatePreview.run(); }
+        AddReminderBottomSheet.show(context, dueDate, reminder -> {
+            if (listener != null) listener.onReminderAdded(reminder);
         });
-
-        spUnit.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(android.widget.AdapterView<?> parent, View v, int position, long id) {
-                updatePreview.run();
-            }
-            @Override public void onNothingSelected(android.widget.AdapterView<?> parent) {}
-        });
-
-        btnCancel.setOnClickListener(v -> reminderDialog.dismiss());
-
-        btnSave.setOnClickListener(v -> {
-            String valStr = etValue.getText().toString().trim();
-            if (valStr.isEmpty()) {
-                etValue.setError("Vui lòng nhập số");
-                return;
-            }
-
-            try {
-                int value = Integer.parseInt(valStr);
-                if (value <= 0) {
-                    etValue.setError("Phải lớn hơn 0");
-                    return;
-                }
-
-                int unitIndex = spUnit.getSelectedItemPosition();
-                long reminderTime = calculateReminderTime(dueDate, value, unitIndex);
-
-                // Kiểm tra: reminder phải trong tương lai
-                if (reminderTime <= System.currentTimeMillis()) {
-                    Toast.makeText(context, "Thời gian nhắc nhở phải trong tương lai!", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
-                // Kiểm tra: reminder phải trước deadline
-                if (reminderTime >= dueDate) {
-                    Toast.makeText(context, "Thời gian nhắc nhở phải trước deadline!", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
-                String[] unitNames = {"phút", "giờ", "ngày"};
-                String displayText = value + " " + unitNames[unitIndex] + " trước deadline";
-
-                PendingReminder pending = new PendingReminder(value, unitIndex, reminderTime, displayText);
-                listener.onReminderAdded(pending);
-                reminderDialog.dismiss();
-            } catch (NumberFormatException e) {
-                etValue.setError("Số không hợp lệ");
-            }
-        });
-
-        reminderDialog.show();
     }
 
     /**
      * Tính thời gian nhắc nhở dựa trên deadline và khoảng cách.
      */
-    private static long calculateReminderTime(long dueDate, int value, int unitIndex) {
-        long offset;
-        switch (unitIndex) {
-            case 0: offset = value * 60 * 1000L; break;         // Phút
-            case 1: offset = value * 60 * 60 * 1000L; break;    // Giờ
-            case 2: offset = value * 24 * 60 * 60 * 1000L; break; // Ngày
-            default: offset = 0;
-        }
-        return dueDate - offset;
-    }
-
     /**
      * Thêm UI item cho pending reminder (chưa lưu DB).
      */
     private static void addPendingReminderToUI(Context context, LinearLayout container,
                                                 PendingReminder pending, List<PendingReminder> pendingList) {
-        LinearLayout itemLayout = createReminderItemLayout(context, "🔔 " + pending.displayText);
-
-        ImageView btnRemove = new ImageView(context);
-        btnRemove.setImageResource(android.R.drawable.ic_menu_close_clear_cancel);
-        LinearLayout.LayoutParams removeParams = new LinearLayout.LayoutParams(
-                dpToPx(context, 20), dpToPx(context, 20));
-        removeParams.gravity = Gravity.CENTER_VERTICAL;
-        btnRemove.setLayoutParams(removeParams);
-        btnRemove.setOnClickListener(v -> {
-            pendingList.remove(pending);
-            container.removeView(itemLayout);
-        });
-        itemLayout.addView(btnRemove);
-
-        container.addView(itemLayout);
+        addReminderItemToUI(
+                context,
+                container,
+                "🔔 " + pending.displayText,
+                () -> pendingList.remove(pending)
+        );
     }
 
     /**
@@ -530,50 +382,25 @@ public class TaskDialogHelper {
                                                  Reminder reminder, List<Reminder> existingList,
                                                  long dueDate, SimpleDateFormat sdf) {
         String timeText = "🔔 Nhắc nhở lúc " + sdf.format(new Date(reminder.getReminderTime()));
-        LinearLayout itemLayout = createReminderItemLayout(context, timeText);
-
-        ImageView btnRemove = new ImageView(context);
-        btnRemove.setImageResource(android.R.drawable.ic_menu_close_clear_cancel);
-        LinearLayout.LayoutParams removeParams = new LinearLayout.LayoutParams(
-                dpToPx(context, 20), dpToPx(context, 20));
-        removeParams.gravity = Gravity.CENTER_VERTICAL;
-        btnRemove.setLayoutParams(removeParams);
-        btnRemove.setOnClickListener(v -> {
-            existingList.remove(reminder);
-            container.removeView(itemLayout);
-        });
-        itemLayout.addView(btnRemove);
-
-        container.addView(itemLayout);
+        addReminderItemToUI(
+                context,
+                container,
+                timeText,
+                () -> existingList.remove(reminder)
+        );
     }
 
     /**
-     * Tạo layout item cho 1 dòng reminder.
+     * Tạo 1 UI reminder item (gồm text + nút xoá).
+     * Wrapper pending/existing chỉ cần truyền text và action remove khỏi list tương ứng.
      */
-    private static LinearLayout createReminderItemLayout(Context context, String text) {
-        LinearLayout itemLayout = new LinearLayout(context);
-        itemLayout.setOrientation(LinearLayout.HORIZONTAL);
-        itemLayout.setGravity(Gravity.CENTER_VERTICAL);
-        LinearLayout.LayoutParams itemParams = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        itemParams.setMargins(0, dpToPx(context, 4), 0, dpToPx(context, 4));
-        itemLayout.setLayoutParams(itemParams);
-        itemLayout.setPadding(dpToPx(context, 8), dpToPx(context, 6), dpToPx(context, 8), dpToPx(context, 6));
-
-        TextView tvReminder = new TextView(context);
-        tvReminder.setText(text);
-        tvReminder.setTextColor(0xFFEBEBF5);
-        tvReminder.setTextSize(13);
-        LinearLayout.LayoutParams textParams = new LinearLayout.LayoutParams(
-                0, ViewGroup.LayoutParams.WRAP_CONTENT, 1);
-        tvReminder.setLayoutParams(textParams);
-        itemLayout.addView(tvReminder);
-
-        return itemLayout;
-    }
-
-    private static int dpToPx(Context context, int dp) {
-        return (int) (dp * context.getResources().getDisplayMetrics().density);
+    private static void addReminderItemToUI(
+            Context context,
+            LinearLayout container,
+            String text,
+            Runnable onRemove
+    ) {
+        ReminderItemViewFactory.addReminderItem(context, container, text, onRemove);
     }
 
     interface OnReminderAddedListener {

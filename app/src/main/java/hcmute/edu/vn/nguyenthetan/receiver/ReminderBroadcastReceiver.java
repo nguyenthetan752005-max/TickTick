@@ -81,7 +81,7 @@ public class ReminderBroadcastReceiver extends BroadcastReceiver {
 
         // Tạo và hiện notification
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID_REMINDER)
-                .setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
+                .setSmallIcon(android.R.drawable.ic_dialog_info)
                 .setContentTitle(messageTitle)
                 .setContentText(messageBody)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)

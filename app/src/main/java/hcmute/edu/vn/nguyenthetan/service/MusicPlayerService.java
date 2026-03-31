@@ -11,6 +11,7 @@ import android.net.Uri;
 import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
+import android.util.Log;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
@@ -47,6 +48,7 @@ public class MusicPlayerService extends Service {
     }
 
     @Override
+    @android.annotation.SuppressLint("ForegroundServiceType")
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (intent != null) {
             String action = intent.getAction();
@@ -57,8 +59,18 @@ public class MusicPlayerService extends Service {
                 return START_NOT_STICKY;
             }
         }
-        // Start foreground with a basic notification
-        startForeground(NOTIFICATION_ID, buildNotification());
+        
+        try {
+            Notification notification = buildNotification();
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                startForeground(NOTIFICATION_ID, notification,
+                        android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK);
+            } else {
+                startForeground(NOTIFICATION_ID, notification);
+            }
+        } catch (Exception e) {
+            Log.e("MusicPlayerService", "Error starting foreground: " + e.getMessage());
+        }
         return START_STICKY;
     }
 
@@ -66,73 +78,106 @@ public class MusicPlayerService extends Service {
         try {
             if (mediaPlayer != null) {
                 mediaPlayer.release();
+                mediaPlayer = null;
             }
-            currentTitle = title;
-            currentArtist = artist;
+
+            // Đảm bảo không bao giờ null
+            this.currentTitle = (title != null) ? title : "";
+            this.currentArtist = (artist != null) ? artist : "";
+            
             mediaPlayer = MediaPlayer.create(this, uri);
             if (mediaPlayer != null) {
                 mediaPlayer.setOnCompletionListener(mp -> {
-                    // Update notification when song ends
                     updateNotification();
                 });
                 mediaPlayer.start();
                 updateNotification();
+            } else {
+                Log.e("MusicPlayerService", "Failed to create MediaPlayer for URI: " + uri);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e("MusicPlayerService", "Error in playMusic: " + e.getMessage());
         }
     }
 
     public void pauseMusic() {
-        if (mediaPlayer != null && mediaPlayer.isPlaying()) {
-            mediaPlayer.pause();
-            updateNotification();
+        try {
+            if (mediaPlayer != null && mediaPlayer.isPlaying()) {
+                mediaPlayer.pause();
+                updateNotification();
+            }
+        } catch (Exception e) {
+            Log.e("MusicPlayerService", "Error in pauseMusic: " + e.getMessage());
         }
     }
 
     public void resumeMusic() {
-        if (mediaPlayer != null && !mediaPlayer.isPlaying()) {
-            mediaPlayer.start();
-            updateNotification();
+        try {
+            if (mediaPlayer != null && !mediaPlayer.isPlaying()) {
+                mediaPlayer.start();
+                updateNotification();
+            }
+        } catch (Exception e) {
+            Log.e("MusicPlayerService", "Error in resumeMusic: " + e.getMessage());
         }
     }
 
     public void stopMusic() {
-        if (mediaPlayer != null) {
-            mediaPlayer.stop();
-            mediaPlayer.release();
-            mediaPlayer = null;
+        try {
+            if (mediaPlayer != null) {
+                mediaPlayer.stop();
+                mediaPlayer.release();
+                mediaPlayer = null;
+            }
+        } catch (Exception e) {
+            Log.e("MusicPlayerService", "Error in stopMusic: " + e.getMessage());
         }
         currentTitle = "";
         currentArtist = "";
     }
 
     public boolean isPlaying() {
-        return mediaPlayer != null && mediaPlayer.isPlaying();
+        try {
+            return mediaPlayer != null && mediaPlayer.isPlaying();
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     public int getCurrentPosition() {
-        if (mediaPlayer != null) {
-            return mediaPlayer.getCurrentPosition();
+        try {
+            if (mediaPlayer != null) {
+                return mediaPlayer.getCurrentPosition();
+            }
+        } catch (Exception e) {
+            return 0;
         }
         return 0;
     }
 
     public int getDuration() {
-        if (mediaPlayer != null) {
-            return mediaPlayer.getDuration();
+        try {
+            if (mediaPlayer != null) {
+                return mediaPlayer.getDuration();
+            }
+        } catch (Exception e) {
+            return 0;
         }
         return 0;
     }
 
     public void seekTo(int position) {
-        if (mediaPlayer != null) {
-            mediaPlayer.seekTo(position);
+        try {
+            if (mediaPlayer != null) {
+                mediaPlayer.seekTo(position);
+            }
+        } catch (Exception e) {
+            Log.e("MusicPlayerService", "Error in seekTo: " + e.getMessage());
         }
     }
 
     public String getCurrentTitle() {
-        return currentTitle;
+        return currentTitle != null ? currentTitle : "";
     }
 
     private void createNotificationChannel() {
@@ -162,8 +207,8 @@ public class MusicPlayerService extends Service {
                 this, 1, stopIntent,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
-        String title = currentTitle.isEmpty() ? "Trình phát nhạc" : currentTitle;
-        String text = currentArtist.isEmpty() ? "TickTick Music" : currentArtist;
+        String title = (currentTitle == null || currentTitle.isEmpty()) ? "Trình phát nhạc" : currentTitle;
+        String text = (currentArtist == null || currentArtist.isEmpty()) ? "TickTick Music" : currentArtist;
 
         return new NotificationCompat.Builder(this, CHANNEL_ID_MUSIC)
                 .setSmallIcon(android.R.drawable.ic_media_play)
@@ -177,9 +222,13 @@ public class MusicPlayerService extends Service {
     }
 
     private void updateNotification() {
-        NotificationManager manager = getSystemService(NotificationManager.class);
-        if (manager != null) {
-            manager.notify(NOTIFICATION_ID, buildNotification());
+        try {
+            NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+            if (manager != null) {
+                manager.notify(NOTIFICATION_ID, buildNotification());
+            }
+        } catch (Exception e) {
+            Log.e("MusicPlayerService", "Error updating notification: " + e.getMessage());
         }
     }
 

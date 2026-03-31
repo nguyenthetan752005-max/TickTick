@@ -5,27 +5,27 @@
         <item
             android:id="@+id/nav_today"
             android:icon="@android:drawable/ic_menu_today"
-            android:title="Hôm nay" />
+            android:title="@string/menu_today" />
         <item
             android:id="@+id/nav_next_7_days"
             android:icon="@android:drawable/ic_menu_month"
-            android:title="7 ngày kế tiếp" />
+            android:title="@string/menu_next_7_days" />
         <item
             android:id="@+id/nav_inbox"
             android:icon="@android:drawable/stat_notify_chat"
-            android:title="Hộp thư đến" />
+            android:title="@string/menu_inbox" />
         <item
             android:id="@+id/nav_drafts"
             android:icon="@android:drawable/ic_menu_edit"
-            android:title="Nhiệm vụ nháp" />
+            android:title="@string/menu_drafts" />
         <item
             android:id="@+id/nav_completed"
             android:icon="@android:drawable/checkbox_on_background"
-            android:title="Task đã hoàn thành" />
+            android:title="@string/menu_completed" />
         <item
             android:id="@+id/nav_all"
             android:icon="@android:drawable/ic_menu_sort_by_size"
-            android:title="Tất cả nhiệm vụ" />
+            android:title="@string/menu_all_tasks" />
     </group>
 
     <!-- Tiện ích: Danh bạ + Nhạc + Hồ sơ -->
@@ -33,18 +33,22 @@
         <item
             android:id="@+id/nav_contacts"
             android:icon="@android:drawable/ic_menu_my_calendar"
-            android:title="📞 Danh bạ" />
+            android:title="@string/menu_contacts" />
         <item
             android:id="@+id/nav_media"
             android:icon="@android:drawable/ic_media_play"
-            android:title="🎵 Nhạc" />
+            android:title="@string/menu_media" />
         <item
             android:id="@+id/nav_profile"
             android:icon="@android:drawable/ic_menu_myplaces"
-            android:title="👤 Hồ sơ" />
+            android:title="@string/menu_profile" />
+        <item
+            android:id="@+id/nav_theme"
+            android:icon="@android:drawable/ic_menu_manage"
+            android:title="Giao diện" />
     </group>
 
-    <item android:id="@+id/nav_lists_header" android:title="Lists">
+    <item android:id="@+id/nav_lists_header" android:title="@string/menu_lists_header">
         <menu>
             <group android:id="@+id/main_group_lists" />
         </menu>
@@ -54,7 +58,11 @@
         <item
             android:id="@+id/nav_add_list"
             android:icon="@android:drawable/ic_input_add"
-            android:title="Thêm" />
+            android:title="@string/menu_add_list" />
+        <item
+            android:id="@+id/nav_clear_data"
+            android:icon="@android:drawable/ic_delete"
+            android:title="Clear All Data" />
     </group>
 
 </menu>

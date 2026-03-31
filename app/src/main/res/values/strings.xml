@@ -1,6 +1,11 @@
 <resources>
     <string name="app_name">Tick Tick</string>
 
+    <!-- Common / generic -->
+    <string name="action_back">Quay lại</string>
+    <string name="action_cancel">Hủy</string>
+    <string name="action_save">Lưu</string>
+
     <!-- Contacts -->
     <string name="title_contacts">Danh bạ</string>
     <string name="search_contacts">Tìm kiếm danh bạ…</string>
@@ -18,6 +23,66 @@
     <string name="music_player">Trình phát nhạc</string>
 
     <!-- Profile -->
+    <string name="title_profile">Hồ sơ cá nhân</string>
+    <string name="profile_change_avatar">📷  Đổi ảnh đại diện</string>
+    <string name="profile_remove_avatar">Xóa ảnh đại diện</string>
+    <string name="profile_display_name_label">Tên hiển thị</string>
+    <string name="profile_display_name_hint">Nhập tên của bạn</string>
+    <string name="profile_email_label">Email</string>
+    <string name="profile_email_hint">Nhập email</string>
+    <string name="profile_bio_label">Ghi chú cá nhân</string>
+    <string name="profile_bio_hint">Viết gì đó về bạn...</string>
+    <string name="profile_save_button">💾  Lưu thông tin</string>
     <string name="choose_avatar">Chọn ảnh đại diện</string>
     <string name="avatar_updated">Đã cập nhật ảnh đại diện</string>
+
+    <!-- Empty state -->
+    <string name="empty_tasks_title">Không có nhiệm vụ</string>
+    <string name="empty_tasks_description">Nhấn vào nút + để thêm</string>
+
+    <!-- Add task dialog -->
+    <string name="task_dialog_title_new">Nhiệm vụ mới</string>
+    <string name="task_dialog_name_hint">Bạn muốn làm gì?</string>
+    <string name="task_dialog_desc_hint">Thêm chi tiết...</string>
+    <string name="task_dialog_add_reminder">Thêm nhắc nhở</string>
+    <string name="task_dialog_clear_deadline">Xóa hạn chót</string>
+    <string name="task_dialog_due_today">Hôm nay</string>
+    <string name="task_dialog_due_time_placeholder">00:00</string>
+    <string name="task_dialog_cancel">Hủy</string>
+    <string name="task_dialog_save">Lưu</string>
+
+    <!-- Reminder bottom sheet -->
+    <string name="reminder_dialog_title">🔔 Thêm nhắc nhở</string>
+    <string name="reminder_dialog_description">Nhắc nhở trước deadline:</string>
+    <string name="reminder_dialog_value_hint">30</string>
+    <string name="reminder_dialog_preview_prefix">Thời gian nhắc nhở: </string>
+    <string name="reminder_dialog_preview_placeholder">Thời gian nhắc nhở: --</string>
+    <string name="reminder_dialog_cancel">Hủy</string>
+    <string name="reminder_dialog_save">Lưu</string>
+
+    <!-- Task item -->
+    <string name="task_item_name_placeholder">Tên nhiệm vụ</string>
+    <string name="task_item_desc_placeholder">Mô tả chi tiết</string>
+
+    <!-- Notifications -->
+    <string name="notification_item_message_placeholder">Nội dung thông báo</string>
+    <string name="notification_item_time_just_now">Vừa xong</string>
+
+    <!-- Menu texts -->
+    <string name="menu_today">Hôm nay</string>
+    <string name="menu_next_7_days">7 ngày kế tiếp</string>
+    <string name="menu_inbox">Hộp thư đến</string>
+    <string name="menu_drafts">Nhiệm vụ nháp</string>
+    <string name="menu_completed">Task đã hoàn thành</string>
+    <string name="menu_all_tasks">Tất cả nhiệm vụ</string>
+    <string name="menu_contacts">📞 Danh bạ</string>
+    <string name="menu_media">🎵 Nhạc</string>
+    <string name="menu_profile">👤 Hồ sơ</string>
+    <string name="menu_lists_header">Lists</string>
+    <string name="menu_add_list">Thêm</string>
+
+    <!-- Sort menu -->
+    <string name="sort_by_name">Sắp xếp theo tên (A-Z)</string>
+    <string name="sort_by_deadline">Sắp xếp theo deadline</string>
+    <string name="sort_by_newest">Mới tạo nhất</string>
 </resources>

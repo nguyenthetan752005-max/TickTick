@@ -2,6 +2,8 @@ package hcmute.edu.vn.nguyenthetan.repository;
 
 import android.content.Context;
 
+import androidx.lifecycle.LiveData;
+
 import java.util.List;
 
 import hcmute.edu.vn.nguyenthetan.database.AppDatabase;
@@ -27,7 +29,11 @@ public class AppNotificationRepository {
         notificationDao.delete(notification);
     }
 
-    public List<AppNotification> getAllNotifications() {
+    public void deleteAllNotifications() {
+        notificationDao.deleteAll();
+    }
+
+    public LiveData<List<AppNotification>> getAllNotifications() {
         return notificationDao.getAllNotifications();
     }
 }

@@ -5,13 +5,57 @@
     <color name="blue_primary">#5271FF</color>
     <color name="blue_light">#E8F0FE</color>
     <color name="text_secondary">#8E8E93</color>
+
+    <!-- Surfaces / backgrounds -->
     <color name="background_dark">#000000</color>
     <color name="nav_background">#1C1C1E</color>
+    <color name="card_dark">#1E1E1E</color>
+    <color name="surface_elevated">#2C2C2E</color>
+
+    <!-- Text detail/tertiary -->
+    <color name="text_tertiary">#A0A0A0</color>
+
+    <!-- Decorative / feature colors -->
     <color name="gift_tag_bg">#332014</color>
     <color name="gift_tag_text">#E67E22</color>
     <color name="green_call">#4CAF50</color>
     <color name="orange_sms">#FF9800</color>
     <color name="purple_music">#9C27B0</color>
-    <color name="card_dark">#1E1E1E</color>
     <color name="red_stop">#F44336</color>
+
+    <!-- Theme Colors: Summer -->
+    <color name="summer_bg">#1A2332</color>
+    <color name="summer_nav_bg">#0F1720</color>
+    <color name="summer_card">#243447</color>
+    <color name="summer_surface">#2D3E50</color>
+    <color name="summer_primary">#F59E0B</color>
+    <color name="summer_primary_light">#FCD34D</color>
+    <color name="summer_text_main">#FFFBEB</color>
+
+    <!-- Theme Colors: Hell -->
+    <color name="hell_bg">#200000</color>
+    <color name="hell_nav_bg">#100000</color>
+    <color name="hell_card">#350000</color>
+    <color name="hell_surface">#4A0000</color>
+    <color name="hell_primary">#E53935</color>
+    <color name="hell_primary_light">#EF5350</color>
+    <color name="hell_text_main">#FFEBEE</color>
+
+    <!-- Theme Colors: Winter -->
+    <color name="winter_bg">#001C30</color>
+    <color name="winter_nav_bg">#00111A</color>
+    <color name="winter_card">#176B87</color>
+    <color name="winter_surface">#64CCC5</color>
+    <color name="winter_primary">#DAFFFB</color>
+    <color name="winter_primary_light">#FFFFFF</color>
+    <color name="winter_text_main">#FFFFFF</color>
+
+    <!-- Theme Colors: Neon -->
+    <color name="neon_bg">#050511</color>
+    <color name="neon_nav_bg">#020205</color>
+    <color name="neon_card">#110B29</color>
+    <color name="neon_surface">#221150</color>
+    <color name="neon_primary">#FF007F</color>
+    <color name="neon_primary_light">#00F5FF</color>
+    <color name="neon_text_main">#FFFFFF</color>
 </resources>

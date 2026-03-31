@@ -14,7 +14,7 @@ import hcmute.edu.vn.nguyenthetan.model.dao.CategoryDao;
 import hcmute.edu.vn.nguyenthetan.model.dao.ReminderDao;
 import hcmute.edu.vn.nguyenthetan.model.dao.TaskDao;
 
-@Database(entities = {Category.class, Task.class, Reminder.class, AppNotification.class}, version = 5) // Tăng lên phiên bản 5
+@Database(entities = {Category.class, Task.class, Reminder.class, AppNotification.class}, version = 5, exportSchema = false)
 public abstract class AppDatabase extends RoomDatabase {
 
     private static AppDatabase instance;

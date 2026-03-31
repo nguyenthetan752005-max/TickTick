@@ -3,9 +3,9 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginHorizontal="16dp"
-    android:layout_marginVertical="4dp"
-    app:cardBackgroundColor="#1C1C1E"
+    android:layout_marginHorizontal="@dimen/spacing_l"
+    android:layout_marginVertical="@dimen/spacing_s"
+    app:cardBackgroundColor="?attr/themeNavBg"
     app:cardCornerRadius="12dp"
     app:cardElevation="0dp">
 
@@ -27,7 +27,7 @@
                 android:layout_height="24dp"
                 android:layout_gravity="center"
                 android:src="@android:drawable/ic_dialog_info"
-                app:tint="@color/blue_primary" />
+                app:tint="?attr/themePrimary" />
 
             <!-- Chấm đỏ chưa đọc -->
             <View
@@ -41,7 +41,7 @@
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
+            android:layout_marginStart="@dimen/spacing_l"
             android:layout_weight="1"
             android:orientation="vertical">
 
@@ -49,8 +49,8 @@
                 android:id="@+id/tvNotificationMessage"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Nội dung thông báo"
-                android:textColor="@color/white"
+                android:text="@string/notification_item_message_placeholder"
+                android:textColor="?attr/themeTextWhite"
                 android:textSize="15sp"
                 android:textStyle="bold" />
 
@@ -58,9 +58,9 @@
                 android:id="@+id/tvNotificationTime"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:text="Vừa xong"
-                android:textColor="@color/text_secondary"
+                android:layout_marginTop="@dimen/spacing_s"
+                android:text="@string/notification_item_time_just_now"
+                android:textColor="?attr/themeTextSecondary"
                 android:textSize="12sp" />
         </LinearLayout>
 
@@ -70,7 +70,7 @@
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:src="@android:drawable/ic_menu_close_clear_cancel"
-            app:tint="@color/text_secondary"
+            app:tint="?attr/themeTextSecondary"
             android:padding="2dp"/>
     </LinearLayout>
 </androidx.cardview.widget.CardView>

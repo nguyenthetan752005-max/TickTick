@@ -6,46 +6,126 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.Transformations;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import hcmute.edu.vn.nguyenthetan.TaskDialogHelper;
 import hcmute.edu.vn.nguyenthetan.adapter.HeaderItem;
 import hcmute.edu.vn.nguyenthetan.adapter.InboxItem;
 import hcmute.edu.vn.nguyenthetan.adapter.NotificationItemWrapper;
-import hcmute.edu.vn.nguyenthetan.adapter.TaskItemWrapper;
 import hcmute.edu.vn.nguyenthetan.model.AppNotification;
 import hcmute.edu.vn.nguyenthetan.model.Reminder;
 import hcmute.edu.vn.nguyenthetan.model.Task;
 import hcmute.edu.vn.nguyenthetan.repository.AppNotificationRepository;
 import hcmute.edu.vn.nguyenthetan.repository.ReminderRepository;
 import hcmute.edu.vn.nguyenthetan.repository.TaskRepository;
-import hcmute.edu.vn.nguyenthetan.MainActivity;
-import hcmute.edu.vn.nguyenthetan.service.ReminderService;
-
-import android.app.NotificationManager;
-import android.app.PendingIntent;
-import android.content.Context;
-import android.content.Intent;
-import androidx.core.app.NotificationCompat;
+import hcmute.edu.vn.nguyenthetan.util.AppExecutors;
+import hcmute.edu.vn.nguyenthetan.util.NotificationHelper;
 
 public class MainViewModel extends AndroidViewModel {
+
+    private static class FilterState {
+        final int mode;
+        final int categoryId;
+        final String keyword;
+        final int sortMode; // -1 = không sort
+
+        FilterState(int mode, int categoryId, String keyword, int sortMode) {
+            this.mode = mode;
+            this.categoryId = categoryId;
+            this.keyword = keyword;
+            this.sortMode = sortMode;
+        }
+    }
 
     private TaskRepository taskRepository;
     private ReminderRepository reminderRepository;
     private AppNotificationRepository notificationRepository;
 
-    private MutableLiveData<List<Task>> tasks = new MutableLiveData<>();
-    private MutableLiveData<List<InboxItem>> inboxData = new MutableLiveData<>();
-
     private int currentFilterMode = 0;
     private int currentCategoryId = -1;
+    private String currentSearchKeyword = "";
+    private int currentSortMode = -1;
+
+    private final AppExecutors appExecutors;
+
+    private final MutableLiveData<FilterState> filterStateLiveData = new MutableLiveData<>();
+    private final LiveData<List<Task>> tasks;
+    private final LiveData<List<InboxItem>> inboxData;
 
     public MainViewModel(@NonNull Application application) {
         super(application);
         taskRepository = new TaskRepository(application);
         reminderRepository = new ReminderRepository(application);
         notificationRepository = new AppNotificationRepository(application);
+        appExecutors = AppExecutors.getInstance();
+
+        // Trạng thái ban đầu (mode mặc định: Inbox)
+        publishState();
+
+        tasks = Transformations.switchMap(filterStateLiveData, state -> {
+            if (state == null) return new MutableLiveData<>(Collections.emptyList());
+
+            // Search ưu tiên hơn filter mode
+            String keyword = state.keyword;
+            LiveData<List<Task>> source;
+            if (keyword != null && !keyword.trim().isEmpty()) {
+                source = taskRepository.searchTasks(keyword);
+            } else {
+                switch (state.mode) {
+                    case 1:
+                        source = taskRepository.getTasksToday();
+                        break;
+                    case 2:
+                        source = taskRepository.getTasksNext7Days();
+                        break;
+                    case 3:
+                        source = taskRepository.getTasksByCategoryId(state.categoryId);
+                        break;
+                    case 4:
+                        source = taskRepository.getCompletedTasks();
+                        break;
+                    case 5:
+                        source = taskRepository.getAllTasks();
+                        break;
+                    case 6:
+                        source = taskRepository.getInboxTasks();
+                        break;
+                    case 0:
+                    default:
+                        source = new MutableLiveData<>(Collections.emptyList());
+                        break;
+                }
+            }
+
+            return Transformations.map(source, list -> sortTasks(list, state.sortMode));
+        });
+
+        inboxData = Transformations.switchMap(filterStateLiveData, state -> {
+            if (state == null || state.mode != 0) {
+                return new MutableLiveData<>(Collections.emptyList());
+            }
+
+            return Transformations.map(notificationRepository.getAllNotifications(), notifications -> {
+                List<InboxItem> items = new ArrayList<>();
+
+                if (notifications != null && !notifications.isEmpty()) {
+                    items.add(new HeaderItem("Thông báo nhắc nhở"));
+                    for (AppNotification n : notifications) {
+                        items.add(new NotificationItemWrapper(n));
+                    }
+                }
+
+                if (items.isEmpty()) {
+                    items.add(new HeaderItem("Hộp thư thông báo trống"));
+                }
+
+                return items;
+            });
+        });
     }
 
     public LiveData<List<Task>> getTasks() {
@@ -60,108 +140,78 @@ public class MainViewModel extends AndroidViewModel {
         return currentFilterMode;
     }
 
+    private void publishState() {
+        filterStateLiveData.postValue(
+                new FilterState(currentFilterMode, currentCategoryId, currentSearchKeyword, currentSortMode)
+        );
+    }
+
     public void setFilterMode(int mode) {
         this.currentFilterMode = mode;
         this.currentCategoryId = -1;
-        loadTasks();
+        this.currentSearchKeyword = "";
+        this.currentSortMode = -1;
+        publishState();
     }
 
     public void setCategoryFilter(int categoryId) {
         this.currentFilterMode = 3;
         this.currentCategoryId = categoryId;
-        loadTasks();
+        this.currentSearchKeyword = "";
+        this.currentSortMode = -1;
+        publishState();
     }
 
     public void loadTasks() {
-        new Thread(() -> {
-            if (currentFilterMode == 0) {
-                // Load dữ liệu cho Inbox (Chỉ Thông báo)
-                List<AppNotification> notifications = notificationRepository.getAllNotifications();
-                List<InboxItem> items = new java.util.ArrayList<>();
-
-                if (!notifications.isEmpty()) {
-                    items.add(new HeaderItem("Thông báo nhắc nhở"));
-                    for (AppNotification n : notifications)
-                        items.add(new NotificationItemWrapper(n));
-                }
-
-                if (items.isEmpty()) {
-                    items.add(new HeaderItem("Hộp thư thông báo trống"));
-                }
-
-                inboxData.postValue(items);
-                tasks.postValue(new java.util.ArrayList<>()); // Clear tasks view
-            } else {
-                List<Task> result;
-                switch (currentFilterMode) {
-                    case 1:
-                        result = taskRepository.getTasksToday();
-                        break;
-                    case 2:
-                        result = taskRepository.getTasksNext7Days();
-                        break;
-                    case 3:
-                        result = taskRepository.getTasksByCategoryId(currentCategoryId);
-                        break;
-                    case 4:
-                        result = taskRepository.getCompletedTasks();
-                        break;
-                    case 5:
-                        result = taskRepository.getAllTasks();
-                        break; // Tất cả task
-                    case 6:
-                        result = taskRepository.getInboxTasks(); // Lấy task nháp
-                        break;
-                    default:
-                        result = taskRepository.getAllTasks();
-                        break;
-                }
-                tasks.postValue(result);
-            }
-        }).start();
+        // Chỉ cần đẩy lại state để Room LiveData tự refresh.
+        publishState();
     }
 
     /**
      * Thêm task mới và schedule reminders nếu có.
      */
     public void addTaskWithReminders(Task task, List<TaskDialogHelper.PendingReminder> pendingReminders) {
-        new Thread(() -> {
-            taskRepository.addTask(task);
-            // Lấy task vừa insert (có ID)
-            // Vì Room insert trên main thread đã bị cho phép, ta lấy ID từ danh sách
-            List<Task> allTasks = taskRepository.getAllTasks();
-            if (!allTasks.isEmpty() && pendingReminders != null && !pendingReminders.isEmpty()) {
-                // Task mới nhất có ID cao nhất
-                Task insertedTask = allTasks.get(0); // ORDER BY id DESC
+        appExecutors.diskIO().execute(() -> {
+            long insertedTaskId = taskRepository.addTask(task);
+
+            if (pendingReminders != null && !pendingReminders.isEmpty()) {
                 for (TaskDialogHelper.PendingReminder pr : pendingReminders) {
                     // Tính lại reminder time dựa trên dueDate thực tế
-                    long reminderTime = calculateReminderTime(insertedTask.getDueDate(), pr.value, pr.unitIndex);
-                    Reminder reminder = new Reminder(insertedTask.getId(), reminderTime);
+                    long reminderTime = calculateReminderTime(task.getDueDate(), pr.value, pr.unitIndex);
+                    Reminder reminder = new Reminder((int) insertedTaskId, reminderTime);
                     long id = reminderRepository.addReminder(reminder);
                     reminder.setId((int) id);
-                    reminderRepository.scheduleReminder(reminder, insertedTask.getName());
+                    reminderRepository.scheduleReminder(reminder, task.getName());
                 }
             }
-            loadTasks();
-        }).start();
+
+            // Sau mutation thì reset sort/search để giống behavior cũ (loadTasks())
+            currentSearchKeyword = "";
+            currentSortMode = -1;
+            publishState();
+        });
     }
 
     public void addTask(Task task) {
-        new Thread(() -> {
+        appExecutors.diskIO().execute(() -> {
             taskRepository.addTask(task);
-            loadTasks();
-        }).start();
+            currentSearchKeyword = "";
+            currentSortMode = -1;
+            publishState();
+        });
     }
 
     public void updateTask(Task task) {
-        new Thread(() -> {
+        appExecutors.diskIO().execute(() -> {
             taskRepository.updateTask(task);
-            loadTasks();
-        }).start();
+            currentSearchKeyword = "";
+            currentSortMode = -1;
+            publishState();
+        });
     }
 
     public void completeTask(Task task) {
-        new Thread(() -> {
+        appExecutors.diskIO().execute(() -> {
             taskRepository.updateTask(task);
 
             // Xóa tất cả nhắc nhở của task này để không báo chuông nữa
@@ -177,52 +227,43 @@ public class MainViewModel extends AndroidViewModel {
             notificationRepository.addNotification(congratNotification);
 
             // Hiện notification của hệ thống để người dùng thấy ngay
-            Context context = getApplication().getApplicationContext();
-            Intent openIntent = new Intent(context, MainActivity.class);
-            openIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            PendingIntent pendingIntent = PendingIntent.getActivity(
-                    context, task.getId(), openIntent,
-                    PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+            NotificationHelper.showTaskCompletedNotification(
+                    getApplication().getApplicationContext(),
+                    task,
+                    congratMsg
+            );
 
-            NotificationCompat.Builder builder = new NotificationCompat.Builder(
-                    context, ReminderService.CHANNEL_ID_REMINDER)
-                    .setSmallIcon(android.R.drawable.ic_menu_agenda)
-                    .setContentTitle("🎉 Hoàn thành nhiệm vụ!")
-                    .setContentText(task.getName() + " " + congratMsg)
-                    .setPriority(NotificationCompat.PRIORITY_HIGH)
-                    .setAutoCancel(true)
-                    .setContentIntent(pendingIntent)
-                    .setDefaults(NotificationCompat.DEFAULT_ALL);
-
-            NotificationManager notificationManager = (NotificationManager) context
-                    .getSystemService(Context.NOTIFICATION_SERVICE);
-            if (notificationManager != null) {
-                notificationManager.notify(task.getId(), builder.build());
-            }
-
-            loadTasks();
-        }).start();
+            currentSearchKeyword = "";
+            currentSortMode = -1;
+            publishState();
+        });
     }
 
     public void deleteTasks(List<Task> tasksToDelete) {
-        new Thread(() -> {
+        appExecutors.diskIO().execute(() -> {
             taskRepository.deleteMultiple(tasksToDelete);
-            loadTasks(); // Nạp lại danh sách sau khi xóa hàng loạt
-        }).start();
+            currentSearchKeyword = "";
+            currentSortMode = -1;
+            publishState();
+        });
     }
 
     public void updateNotification(AppNotification notification) {
-        new Thread(() -> {
+        appExecutors.diskIO().execute(() -> {
             notificationRepository.updateNotification(notification);
-            loadTasks();
-        }).start();
+            currentSearchKeyword = "";
+            currentSortMode = -1;
+            publishState();
+        });
     }
 
     public void deleteNotification(AppNotification notification) {
-        new Thread(() -> {
+        appExecutors.diskIO().execute(() -> {
             notificationRepository.deleteNotification(notification);
-            loadTasks();
-        }).start();
+            currentSearchKeyword = "";
+            currentSortMode = -1;
+            publishState();
+        });
     }
 
     // Helper tính thời gian nhắc nhở
@@ -248,10 +289,9 @@ public class MainViewModel extends AndroidViewModel {
      * Tìm kiếm task theo từ khóa.
      */
     public void searchTasks(String keyword) {
-        new Thread(() -> {
-            List<Task> result = taskRepository.searchTasks(keyword);
-            tasks.postValue(result);
-        }).start();
+        currentSearchKeyword = keyword == null ? "" : keyword.trim();
+        currentSortMode = -1;
+        publishState();
     }
 
     /**
@@ -259,21 +299,50 @@ public class MainViewModel extends AndroidViewModel {
      * 0 = theo tên (A-Z), 1 = theo ngày (gần nhất trước), 2 = theo ngày tạo (mới nhất)
      */
     public void sortCurrentTasks(int sortMode) {
-        List<Task> currentTasks = tasks.getValue();
-        if (currentTasks == null || currentTasks.isEmpty()) return;
+        currentSortMode = sortMode;
+        publishState();
+    }
 
-        java.util.List<Task> sorted = new java.util.ArrayList<>(currentTasks);
+    private static List<Task> sortTasks(List<Task> input, int sortMode) {
+        if (input == null) return Collections.emptyList();
+        if (sortMode < 0) return input;
+
+        ArrayList<Task> sorted = new ArrayList<>(input);
         switch (sortMode) {
             case 0: // Tên A-Z
-                java.util.Collections.sort(sorted, (a, b) -> a.getName().compareToIgnoreCase(b.getName()));
+                Collections.sort(sorted,
+                        (a, b) -> a.getName().compareToIgnoreCase(b.getName()));
                 break;
             case 1: // Deadline gần nhất
-                java.util.Collections.sort(sorted, (a, b) -> Long.compare(a.getDueDate(), b.getDueDate()));
+                Collections.sort(sorted,
+                        (a, b) -> Long.compare(a.getDueDate(), b.getDueDate()));
                 break;
             case 2: // Mới tạo nhất (ID giảm dần)
-                java.util.Collections.sort(sorted, (a, b) -> Integer.compare(b.getId(), a.getId()));
+                Collections.sort(sorted,
+                        (a, b) -> Integer.compare(b.getId(), a.getId()));
                 break;
         }
-        tasks.postValue(sorted);
+        return sorted;
+    }
+
+    /**
+     * Xóa tất cả dữ liệu từ database.
+     */
+    public void clearAllData() {
+        appExecutors.diskIO().execute(() -> {
+            // Xóa tất cả tasks (sẽ cascade delete reminders)
+            taskRepository.deleteAllTasks();
+            
+            // Xóa tất cả notifications
+            notificationRepository.deleteAllNotifications();
+            
+            // Reset filter states
+            currentFilterMode = 0;
+            currentCategoryId = -1;
+            currentSearchKeyword = "";
+            currentSortMode = -1;
+            publishState();
+        });
     }
 }
+

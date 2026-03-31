@@ -69,13 +69,22 @@ public class ReminderRepository {
         PendingIntent pendingIntent = createPendingIntent(reminder.getId(), reminder.getTaskId());
 
         try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                // API 31+ - có SCHEDULE_EXACT_ALARM permission
+                alarmManager.setExactAndAllowWhileIdle(
+                        AlarmManager.RTC_WAKEUP,
+                        reminder.getReminderTime(),
+                        pendingIntent
+                );
+            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                // API 23-30 - dùng setExactAndAllowWhileIdle nhưng không yêu cầu permission cao
                 alarmManager.setExactAndAllowWhileIdle(
                         AlarmManager.RTC_WAKEUP,
                         reminder.getReminderTime(),
                         pendingIntent
                 );
             } else {
+                // API <23
                 alarmManager.setExact(
                         AlarmManager.RTC_WAKEUP,
                         reminder.getReminderTime(),
@@ -86,7 +95,17 @@ public class ReminderRepository {
                     + " tại " + new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm", java.util.Locale.getDefault())
                     .format(new java.util.Date(reminder.getReminderTime())));
         } catch (SecurityException e) {
-            Log.e(TAG, "Không thể đặt exact alarm: " + e.getMessage());
+            // Fallback: dùng setAndAllowWhileIdle nếu setExact bị deny
+            Log.e(TAG, "Không thể đặt exact alarm, dùng inexact: " + e.getMessage());
+            try {
+                alarmManager.setAndAllowWhileIdle(
+                        AlarmManager.RTC_WAKEUP,
+                        reminder.getReminderTime(),
+                        pendingIntent
+                );
+            } catch (Exception ex) {
+                Log.e(TAG, "Lỗi đặt alarm: " + ex.getMessage());
+            }
         }
     }
 

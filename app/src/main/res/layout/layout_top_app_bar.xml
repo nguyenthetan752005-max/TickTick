@@ -19,7 +19,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:tint="@color/white" />
+            app:tint="?attr/themeTextWhite" />
 
         <TextView
             android:id="@+id/tvAppTitle"
@@ -27,7 +27,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:text="👋 Welcome"
-            android:textColor="@color/white"
+            android:textColor="?attr/themeTextWhite"
             android:textSize="20sp"
             android:textStyle="bold"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -44,7 +44,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@id/btnMore"
             app:layout_constraintTop_toTopOf="parent"
-            app:tint="@color/white" />
+            app:tint="?attr/themeTextWhite" />
 
         <ImageView
             android:id="@+id/btnMore"
@@ -54,7 +54,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:tint="@color/white" />
+            app:tint="?attr/themeTextWhite" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -63,7 +63,7 @@
         android:id="@+id/layoutDeleteBar"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/nav_background"
+        android:background="?attr/themeNavBg"
         android:paddingHorizontal="16dp"
         android:visibility="gone">
 
@@ -75,7 +75,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:tint="@color/white" />
+            app:tint="?attr/themeTextWhite" />
 
         <TextView
             android:id="@+id/tvSelectedCount"
@@ -83,7 +83,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="32dp"
             android:text="0 selected"
-            android:textColor="@color/white"
+            android:textColor="?attr/themeTextWhite"
             android:textSize="18sp"
             android:textStyle="bold"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -98,7 +98,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:tint="@color/white" />
+            app:tint="?attr/themeTextWhite" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

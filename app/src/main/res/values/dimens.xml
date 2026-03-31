@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Spacing -->
+    <dimen name="spacing_xs">4dp</dimen>
+    <dimen name="spacing_s">8dp</dimen>
+    <dimen name="spacing_m">12dp</dimen>
+    <dimen name="spacing_l">16dp</dimen>
+    <dimen name="spacing_xl">24dp</dimen>
+
+    <!-- Common sizes -->
+    <dimen name="toolbar_height">?attr/actionBarSize</dimen>
+    <dimen name="icon_size_small">18dp</dimen>
+    <dimen name="icon_size_default">24dp</dimen>
+    <dimen name="avatar_small">44dp</dimen>
+    <dimen name="avatar_medium">56dp</dimen>
+    <dimen name="avatar_large">120dp</dimen>
+
+    <!-- Buttons / controls -->
+    <dimen name="button_height_default">48dp</dimen>
+    <dimen name="bottom_nav_height">60dp</dimen>
+
+    <!-- Theme Corner Radius - Personality for each theme -->
+    <dimen name="radius_default">12dp</dimen>    <!-- Neutral, balanced -->
+    <dimen name="radius_summer">20dp</dimen>    <!-- Sunny, soft, relaxed -->
+    <dimen name="radius_winter">28dp</dimen>    <!-- Snowy, soft, premium -->
+    <dimen name="radius_hell">4dp</dimen>       <!-- Sharp, aggressive, edgy -->
+    <dimen name="radius_neon">8dp</dimen>      <!-- Tech, modern, sleek -->
+</resources>
+

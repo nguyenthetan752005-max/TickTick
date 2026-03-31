@@ -4,9 +4,9 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="@drawable/ic_launcher_background"
-    android:backgroundTint="#1C1C1E"
+    android:backgroundTint="?attr/themeNavBg"
     android:orientation="vertical"
-    android:padding="24dp">
+    android:padding="@dimen/spacing_xl">
 
     <View
         android:layout_width="40dp"
@@ -18,17 +18,17 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="🔔 Thêm nhắc nhở"
-        android:textColor="@color/white"
+        android:text="@string/reminder_dialog_title"
+        android:textColor="?attr/themeTextWhite"
         android:textSize="22sp"
         android:textStyle="bold" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="Nhắc nhở trước deadline:"
-        android:textColor="@color/text_secondary"
+        android:layout_marginTop="@dimen/spacing_s"
+        android:text="@string/reminder_dialog_description"
+        android:textColor="?attr/themeTextSecondary"
         android:textSize="14sp" />
 
     <LinearLayout
@@ -42,14 +42,14 @@
         <EditText
             android:id="@+id/etReminderValue"
             android:layout_width="0dp"
-            android:layout_height="48dp"
+            android:layout_height="@dimen/button_height_default"
             android:layout_weight="1"
             android:background="@drawable/btn_outline"
-            android:backgroundTint="#2C2C2E"
+            android:backgroundTint="?attr/themeSurfaceElevated"
             android:gravity="center"
-            android:hint="30"
+            android:hint="@string/reminder_dialog_value_hint"
             android:inputType="number"
-            android:textColor="@color/white"
+            android:textColor="?attr/themeTextWhite"
             android:textColorHint="#4DFFFFFF"
             android:textSize="18sp"
             android:textStyle="bold"
@@ -83,15 +83,15 @@
         android:id="@+id/tvReminderPreview"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:text="Thời gian nhắc nhở: --"
-        android:textColor="@color/blue_primary"
+        android:layout_marginTop="@dimen/spacing_m"
+        android:text="@string/reminder_dialog_preview_placeholder"
+        android:textColor="?attr/themePrimary"
         android:textSize="14sp" />
 
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:layout_marginVertical="20dp"
+        android:layout_marginVertical="@dimen/spacing_xl"
         android:background="#33FFFFFF" />
 
     <!-- Nút Lưu và Hủy -->
@@ -107,13 +107,13 @@
             android:layout_height="40dp"
             android:gravity="center"
             android:paddingHorizontal="20dp"
-            android:text="Hủy"
-            android:textColor="@color/text_secondary"
+            android:text="@string/reminder_dialog_cancel"
+            android:textColor="?attr/themeTextSecondary"
             android:textSize="16sp"
             android:textStyle="bold" />
 
         <View
-            android:layout_width="12dp"
+            android:layout_width="@dimen/spacing_xl"
             android:layout_height="0dp" />
 
         <TextView
@@ -121,11 +121,11 @@
             android:layout_width="wrap_content"
             android:layout_height="40dp"
             android:background="@drawable/btn_outline"
-            android:backgroundTint="@color/blue_primary"
+            android:backgroundTint="?attr/themePrimary"
             android:gravity="center"
             android:paddingHorizontal="24dp"
-            android:text="Lưu"
-            android:textColor="@color/white"
+            android:text="@string/reminder_dialog_save"
+            android:textColor="?attr/themeTextWhite"
             android:textSize="16sp"
             android:textStyle="bold" />
     </LinearLayout>

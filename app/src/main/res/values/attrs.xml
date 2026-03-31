@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Các thuộc tính màu sắc tùy chỉnh cho Theme -->
+    <attr name="themeBgDark" format="color" />
+    <attr name="themeNavBg" format="color" />
+    <attr name="themeCardDark" format="color" />
+    <attr name="themeSurfaceElevated" format="color" />
+    
+    <attr name="themePrimary" format="color" />
+    <attr name="themePrimaryLight" format="color" />
+    
+    <attr name="themeTextWhite" format="color" />
+    <attr name="themeTextSecondary" format="color" />
+    <attr name="themeTextTertiary" format="color" />
+    
+    <!-- Corner radius cho từng theme -->
+    <attr name="themeCornerRadius" format="dimension" />
+</resources>

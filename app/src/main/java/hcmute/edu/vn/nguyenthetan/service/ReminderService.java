@@ -33,9 +33,24 @@ public class ReminderService extends Service {
     }
 
     @Override
+    @android.annotation.SuppressLint("ForegroundServiceType")
     public int onStartCommand(Intent intent, int flags, int startId) {
         // Tạo notification cho Foreground Service
-        startForeground(FOREGROUND_NOTIFICATION_ID, buildForegroundNotification());
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                // API 31+ - có thể set foregroundServiceType
+                startForeground(FOREGROUND_NOTIFICATION_ID, buildForegroundNotification(),
+                        android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE);
+            } else {
+                // API 24-30 - không có foregroundServiceType
+                startForeground(FOREGROUND_NOTIFICATION_ID, buildForegroundNotification());
+            }
+        } catch (Exception e) {
+            // Fallback nếu có lỗi runtime
+            try {
+                startForeground(FOREGROUND_NOTIFICATION_ID, buildForegroundNotification());
+            } catch (Exception ignored) {}
+        }
 
         return START_STICKY;
     }
@@ -50,7 +65,7 @@ public class ReminderService extends Service {
         return new NotificationCompat.Builder(this, CHANNEL_ID_FOREGROUND)
                 .setContentTitle("TickTick - Hệ thống Nhắc nhở")
                 .setContentText("Đang chạy nền để nhắc nhở nhiệm vụ")
-                .setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
+                .setSmallIcon(android.R.drawable.ic_dialog_info)  // Thay icon an toàn hơn
                 .setContentIntent(pendingIntent)
                 .setOngoing(true)
                 .setPriority(NotificationCompat.PRIORITY_LOW)

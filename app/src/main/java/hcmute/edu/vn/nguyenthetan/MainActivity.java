@@ -6,11 +6,8 @@ package hcmute.edu.vn.nguyenthetan;
 
 import android.Manifest;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.widget.EditText;
 import android.widget.PopupMenu;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
@@ -24,10 +21,7 @@ import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.core.graphics.Insets;
 import androidx.core.view.GravityCompat;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.core.splashscreen.SplashScreen;
 import androidx.lifecycle.ViewModelProvider;
@@ -48,14 +42,19 @@ import hcmute.edu.vn.nguyenthetan.model.Task;
 import hcmute.edu.vn.nguyenthetan.repository.CategoryRepository;
 import hcmute.edu.vn.nguyenthetan.service.ReminderService;
 import hcmute.edu.vn.nguyenthetan.view.MainViewModel;
+import hcmute.edu.vn.nguyenthetan.util.DialogUtils;
+import hcmute.edu.vn.nguyenthetan.util.EdgeInsetsUtil;
+import hcmute.edu.vn.nguyenthetan.util.ProfilePrefsUtil;
+import hcmute.edu.vn.nguyenthetan.ui.main.MainSearchDialog;
+import hcmute.edu.vn.nguyenthetan.ui.main.MainTitleResolver;
+import hcmute.edu.vn.nguyenthetan.ui.main.MainDrawerMenuHandler;
+import hcmute.edu.vn.nguyenthetan.ui.main.MultiSelectDeleteController;
+import hcmute.edu.vn.nguyenthetan.ui.main.NavHeaderActions;
 
-public class MainActivity extends AppCompatActivity
+public class MainActivity extends BaseActivity
         implements TaskAdapter.OnTaskClickListener, InboxAdapter.OnInboxItemClickListener {
 
     private static final int REQUEST_NOTIFICATION_PERMISSION = 1001;
-    private static final String PREFS_NAME = "ticktick_prefs";
-    private static final String KEY_AVATAR_URI = "avatar_uri";
-    private static final String KEY_DISPLAY_NAME = "display_name";
 
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
@@ -70,6 +69,7 @@ public class MainActivity extends AppCompatActivity
     private View layoutNormalBar, layoutDeleteBar;
     private TextView tvSelectedCount, tvAppTitle;
     private ImageView btnCloseDeleteMode, btnDeleteSelected, btnEnterDeleteMode;
+    private MultiSelectDeleteController multiSelectDeleteController;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -156,11 +156,19 @@ public class MainActivity extends AppCompatActivity
      * Khởi động Foreground Service cho Reminder.
      */
     private void startReminderService() {
-        Intent serviceIntent = new Intent(this, ReminderService.class);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            startForegroundService(serviceIntent);
-        } else {
-            startService(serviceIntent);
+        try {
+            Intent serviceIntent = new Intent(this, ReminderService.class);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                startForegroundService(serviceIntent);
+            } else {
+                startService(serviceIntent);
+            }
+        } catch (Exception e) {
+            // Fallback: nếu startForegroundService fail, dùng startService
+            try {
+                Intent serviceIntent = new Intent(this, ReminderService.class);
+                startService(serviceIntent);
+            } catch (Exception ignored) {}
         }
     }
 
@@ -187,12 +195,7 @@ public class MainActivity extends AppCompatActivity
         btnDeleteSelected = findViewById(R.id.btnDeleteSelected);
         btnEnterDeleteMode = findViewById(R.id.btnEnterDeleteMode);
 
-        View mainView = findViewById(R.id.main);
-        ViewCompat.setOnApplyWindowInsetsListener(mainView, (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
+        EdgeInsetsUtil.applySystemBarsPadding(findViewById(R.id.main));
 
         findViewById(R.id.fab).setOnClickListener(v -> {
             List<Category> categories = categoryRepository.getAllCategories();
@@ -244,45 +247,26 @@ public class MainActivity extends AppCompatActivity
             popupMenu.show();
         });
 
-        // === Nav Header Icons ===
-        setupNavHeaderIcons();
-
-        btnEnterDeleteMode.setOnClickListener(v -> {
-            taskAdapter.startMultiSelect();
-            updateContextualBar(true);
-        });
-
-        btnCloseDeleteMode.setOnClickListener(v -> {
-            taskAdapter.clearSelection();
-            updateContextualBar(false);
-        });
-
-        btnDeleteSelected.setOnClickListener(v -> {
-            List<Task> selected = taskAdapter.getSelectedTasks();
-            if (selected.isEmpty())
-                return;
-
-            new android.app.AlertDialog.Builder(this)
-                    .setTitle("Xóa nhiệm vụ")
-                    .setMessage("Bạn chắc chắn muốn xóa " + selected.size() + " nhiệm vụ này?")
-                    .setPositiveButton("Xóa", (d, w) -> {
-                        viewModel.deleteTasks(selected);
-                        taskAdapter.clearSelection();
-                        updateContextualBar(false);
-                    })
-                    .setNegativeButton("Hủy", null)
-                    .show();
-        });
+        NavHeaderActions.setup(
+                this,
+                drawerLayout,
+                navigationView,
+                viewModel,
+                keyword -> {
+                    if (tvAppTitle != null) tvAppTitle.setText("Kết quả: \"" + keyword + "\"");
+                }
+        );
     }
 
     private void setupOnBackPressed() {
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
-                if (taskAdapter != null && taskAdapter.getSelectedTasks().size() > 0) {
-                    taskAdapter.clearSelection();
-                    updateContextualBar(false);
-                } else if (drawerLayout != null && drawerLayout.isDrawerOpen(GravityCompat.START)) {
+                if (multiSelectDeleteController != null
+                        && multiSelectDeleteController.handleBackPressedIfNeeded()) {
+                    return;
+                }
+                if (drawerLayout != null && drawerLayout.isDrawerOpen(GravityCompat.START)) {
                     drawerLayout.closeDrawer(GravityCompat.START);
                 } else {
                     setEnabled(false);
@@ -292,43 +276,11 @@ public class MainActivity extends AppCompatActivity
         });
     }
 
-    private void updateContextualBar(boolean isDeleteMode) {
-        if (layoutNormalBar == null || layoutDeleteBar == null)
-            return;
-        layoutNormalBar.setVisibility(isDeleteMode ? View.GONE : View.VISIBLE);
-        layoutDeleteBar.setVisibility(isDeleteMode ? View.VISIBLE : View.GONE);
-        if (isDeleteMode) {
-            tvSelectedCount.setText(taskAdapter.getSelectedTasks().size() + " selected");
-        }
-    }
-
     private void updateTitleBar() {
         if (tvAppTitle == null)
             return;
         int mode = viewModel.getCurrentFilterMode();
-        switch (mode) {
-            case 0:
-                tvAppTitle.setText("Hộp thư đến");
-                break;
-            case 1:
-                tvAppTitle.setText("Hôm nay");
-                break;
-            case 2:
-                tvAppTitle.setText("7 ngày kế tiếp");
-                break;
-            case 4:
-                tvAppTitle.setText("Đã hoàn thành");
-                break;
-            case 5:
-                tvAppTitle.setText("Tất cả nhiệm vụ");
-                break;
-            case 6:
-                tvAppTitle.setText("Nhiệm vụ nháp");
-                break;
-            default:
-                tvAppTitle.setText("Nhiệm vụ");
-                break;
-        }
+        tvAppTitle.setText(MainTitleResolver.resolveTitle(mode));
     }
 
     private void setupRecyclerView() {
@@ -336,50 +288,31 @@ public class MainActivity extends AppCompatActivity
         inboxAdapter = new InboxAdapter(this);
         rvTasks.setLayoutManager(new LinearLayoutManager(this));
         rvTasks.setAdapter(taskAdapter);
+
+        multiSelectDeleteController = new MultiSelectDeleteController(
+                this,
+                viewModel,
+                taskAdapter,
+                layoutNormalBar,
+                layoutDeleteBar,
+                tvSelectedCount,
+                btnCloseDeleteMode,
+                btnDeleteSelected,
+                btnEnterDeleteMode
+        );
+        multiSelectDeleteController.bind();
     }
 
     private void setupMenuListeners() {
-        navigationView.setNavigationItemSelectedListener(item -> {
-            int id = item.getItemId();
-            if (id == R.id.nav_today)
-                viewModel.setFilterMode(1);
-            else if (id == R.id.nav_next_7_days)
-                viewModel.setFilterMode(2);
-            else if (id == R.id.nav_inbox)
-                viewModel.setFilterMode(0);
-            else if (id == R.id.nav_completed)
-                viewModel.setFilterMode(4);
-            else if (id == R.id.nav_all)
-                viewModel.setFilterMode(5);
-            else if (id == R.id.nav_drafts)
-                viewModel.setFilterMode(6);
-            else if (id == R.id.nav_contacts) {
-                startActivity(new Intent(this, ContactsActivity.class));
-                drawerLayout.closeDrawer(GravityCompat.START);
-                return true;
-            } else if (id == R.id.nav_media) {
-                startActivity(new Intent(this, MediaActivity.class));
-                drawerLayout.closeDrawer(GravityCompat.START);
-                return true;
-            } else if (id == R.id.nav_profile) {
-                startActivity(new Intent(this, ProfileActivity.class));
-                drawerLayout.closeDrawer(GravityCompat.START);
-                return true;
-            } else if (id == R.id.nav_add_list) {
-                CategoryDialogHelper.showAddEditDialog(this, null, (category, action) -> {
-                    if (action.equals("ADD")) {
-                        categoryRepository.addCategory(category.getName());
-                        refreshMenu();
-                    }
-                });
-                drawerLayout.closeDrawer(GravityCompat.START);
-                return true;
-            } else {
-                viewModel.setCategoryFilter(id);
-            }
-            drawerLayout.closeDrawer(GravityCompat.START);
-            return true;
-        });
+        MainDrawerMenuHandler.setup(
+                this,
+                navigationView,
+                drawerLayout,
+                viewModel,
+                categoryRepository,
+                this::refreshMenu,
+                this::setCategoryFilter
+        );
     }
 
     private void refreshMenu() {
@@ -415,27 +348,29 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onTaskLongClick(Task task) {
-        updateContextualBar(true);
+        if (multiSelectDeleteController != null) multiSelectDeleteController.onSelectionChanged(1);
     }
 
     @Override
     public void onCompleteClick(Task task) {
         if (!task.isCompleted()) {
-            new android.app.AlertDialog.Builder(this)
-                    .setTitle("Hoàn thành nhiệm vụ")
-                    .setMessage("Bạn chắc chắn muốn đánh dấu hoàn thành nhiệm vụ này?")
-                    .setPositiveButton("Đồng ý", (d, w) -> {
+            DialogUtils.showConfirmDialog(
+                    this,
+                    "Hoàn thành nhiệm vụ",
+                    "Bạn chắc chắn muốn đánh dấu hoàn thành nhiệm vụ này?",
+                    "Đồng ý",
+                    () -> {
                         task.setCompleted(true);
                         viewModel.completeTask(task);
-                    })
-                    .setNegativeButton("Hủy", null)
-                    .show();
+                    },
+                    "Hủy"
+            );
         }
     }
 
     @Override
     public void onSelectionChanged(int count) {
-        updateContextualBar(count > 0);
+        if (multiSelectDeleteController != null) multiSelectDeleteController.onSelectionChanged(count);
     }
 
     public void setCategoryFilter(int categoryId) {
@@ -457,101 +392,6 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onResume() {
         super.onResume();
-        loadProfileHeaderInfo();
-    }
-
-    /**
-     * Thiết lập click listener cho các icon trên Nav Header.
-     */
-    private void setupNavHeaderIcons() {
-        View headerView = navigationView.getHeaderView(0);
-        if (headerView == null)
-            return;
-
-        // Icon Tìm kiếm
-        View ivSearch = headerView.findViewById(R.id.ivSearch);
-        if (ivSearch != null) {
-            ivSearch.setOnClickListener(v -> {
-                drawerLayout.closeDrawer(GravityCompat.START);
-                showSearchDialog();
-            });
-        }
-
-        // Icon Thông báo → chuyển về Inbox
-        View ivNotification = headerView.findViewById(R.id.ivNotification);
-        if (ivNotification != null) {
-            ivNotification.setOnClickListener(v -> {
-                drawerLayout.closeDrawer(GravityCompat.START);
-                viewModel.setFilterMode(0); // Inbox
-            });
-        }
-
-        // Avatar → mở Profile
-        View ivProfile = headerView.findViewById(R.id.ivProfile);
-        if (ivProfile != null) {
-            ivProfile.setOnClickListener(v -> {
-                drawerLayout.closeDrawer(GravityCompat.START);
-                startActivity(new Intent(this, ProfileActivity.class));
-            });
-        }
-    }
-
-    /**
-     * Hiện dialog tìm kiếm task theo tên.
-     */
-    private void showSearchDialog() {
-        EditText etSearch = new EditText(this);
-        etSearch.setHint("Nhập tên nhiệm vụ...");
-        etSearch.setPadding(48, 32, 48, 32);
-
-        new android.app.AlertDialog.Builder(this)
-                .setTitle("🔍 Tìm kiếm nhiệm vụ")
-                .setView(etSearch)
-                .setPositiveButton("Tìm", (d, w) -> {
-                    String keyword = etSearch.getText().toString().trim();
-                    if (!keyword.isEmpty()) {
-                        viewModel.searchTasks(keyword);
-                        if (tvAppTitle != null)
-                            tvAppTitle.setText("Kết quả: \"" + keyword + "\"");
-                    }
-                })
-                .setNegativeButton("Hủy", null)
-                .show();
-
-        etSearch.requestFocus();
-    }
-
-    /**
-     * Tải ảnh đại diện và tên người dùng từ SharedPreferences vào nav header.
-     */
-    private void loadProfileHeaderInfo() {
-        View headerView = navigationView.getHeaderView(0);
-        if (headerView == null)
-            return;
-
-        ImageView ivProfile = headerView.findViewById(R.id.ivProfile);
-        TextView tvUserName = headerView.findViewById(R.id.tvUserName);
-
-        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-
-        // Load Avatar
-        if (ivProfile != null) {
-            String uriStr = prefs.getString(KEY_AVATAR_URI, null);
-            if (uriStr != null) {
-                try {
-                    ivProfile.setImageURI(Uri.parse(uriStr));
-                } catch (Exception e) {
-                    ivProfile.setImageResource(android.R.drawable.ic_menu_gallery);
-                }
-            } else {
-                ivProfile.setImageResource(android.R.drawable.ic_menu_gallery);
-            }
-        }
-
-        // Load Tên người dùng (Mặc định là Nguyễn Thế Tân nếu chưa lưu)
-        if (tvUserName != null) {
-            String name = prefs.getString(KEY_DISPLAY_NAME, "Nguyễn Thế Tân");
-            tvUserName.setText(name);
-        }
+        NavHeaderActions.loadProfileHeaderInfo(this, navigationView);
     }
 }
