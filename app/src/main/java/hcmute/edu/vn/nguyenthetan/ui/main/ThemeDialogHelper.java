@@ -2,6 +2,7 @@ package hcmute.edu.vn.nguyenthetan.ui.main;
 
 import android.app.Activity;
 import android.app.Dialog;
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.view.Window;
@@ -10,6 +11,7 @@ import android.widget.LinearLayout;
 import hcmute.edu.vn.nguyenthetan.R;
 import hcmute.edu.vn.nguyenthetan.model.ThemeType;
 import hcmute.edu.vn.nguyenthetan.repository.ThemeRepository;
+import hcmute.edu.vn.nguyenthetan.ui.theme.CustomThemeActivity;
 
 public class ThemeDialogHelper {
     public static void showDialog(Activity activity) {
@@ -56,6 +58,13 @@ public class ThemeDialogHelper {
             repo.saveTheme(ThemeType.NEON);
             dialog.dismiss();
             activity.recreate();
+        });
+
+        // Custom theme option - mở CustomThemeActivity
+        dialog.findViewById(R.id.btnThemeCustom).setOnClickListener(v -> {
+            dialog.dismiss();
+            Intent intent = new Intent(activity, CustomThemeActivity.class);
+            activity.startActivity(intent);
         });
 
         dialog.show();

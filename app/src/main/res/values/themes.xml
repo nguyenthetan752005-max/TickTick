@@ -10,6 +10,7 @@
         <item name="themeBgDark">@color/background_dark</item>
         <item name="themeNavBg">@color/nav_background</item>
         <item name="themeCardDark">@color/card_dark</item>
+        <item name="themeCardBg">@color/card_dark</item>
         <item name="themeSurfaceElevated">@color/surface_elevated</item>
         <item name="themePrimary">@color/blue_primary</item>
         <item name="themePrimaryLight">@color/blue_light</item>
@@ -24,6 +25,7 @@
         <item name="themeBgDark">@color/summer_bg</item>
         <item name="themeNavBg">@color/summer_nav_bg</item>
         <item name="themeCardDark">@color/summer_card</item>
+        <item name="themeCardBg">@color/summer_card</item>
         <item name="themeSurfaceElevated">@color/summer_surface</item>
         <item name="themePrimary">@color/summer_primary</item>
         <item name="themePrimaryLight">@color/summer_primary_light</item>
@@ -38,6 +40,7 @@
         <item name="themeBgDark">@color/hell_bg</item>
         <item name="themeNavBg">@color/hell_nav_bg</item>
         <item name="themeCardDark">@color/hell_card</item>
+        <item name="themeCardBg">@color/hell_card</item>
         <item name="themeSurfaceElevated">@color/hell_surface</item>
         <item name="themePrimary">@color/hell_primary</item>
         <item name="themePrimaryLight">@color/hell_primary_light</item>
@@ -52,6 +55,7 @@
         <item name="themeBgDark">@color/winter_bg</item>
         <item name="themeNavBg">@color/winter_nav_bg</item>
         <item name="themeCardDark">@color/winter_card</item>
+        <item name="themeCardBg">@color/winter_card</item>
         <item name="themeSurfaceElevated">@color/winter_surface</item>
         <item name="themePrimary">@color/winter_primary</item>
         <item name="themePrimaryLight">@color/winter_primary_light</item>
@@ -66,6 +70,7 @@
         <item name="themeBgDark">@color/neon_bg</item>
         <item name="themeNavBg">@color/neon_nav_bg</item>
         <item name="themeCardDark">@color/neon_card</item>
+        <item name="themeCardBg">@color/neon_card</item>
         <item name="themeSurfaceElevated">@color/neon_surface</item>
         <item name="themePrimary">@color/neon_primary</item>
         <item name="themePrimaryLight">@color/neon_primary_light</item>

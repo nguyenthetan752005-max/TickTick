@@ -1,3 +1,8 @@
+/**
+ * TaskAdapter: Adapter hiển thị danh sách nhiệm vụ trong RecyclerView.
+ * Chức năng: Hiển thị thông tin task, hỗ trợ chế độ chọn nhiều (multi-select),
+ * đánh dấu hoàn thành, và tương tác click/long-click.
+ */
 package hcmute.edu.vn.nguyenthetan.adapter;
 
 import android.view.LayoutInflater;
@@ -23,6 +28,9 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
     private boolean isMultiSelectMode = false;
     private boolean canToggleComplete = true;
 
+    /**
+     * Interface callback xử lý các sự kiện tương tác với task.
+     */
     public interface OnTaskClickListener {
         void onTaskClick(Task task);
         void onTaskLongClick(Task task);
@@ -30,6 +38,11 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
         void onSelectionChanged(int count);
     }
 
+    /**
+     * Constructor khởi tạo adapter.
+     * @param taskList Danh sách task ban đầu
+     * @param listener Callback khi người dùng tương tác với task
+     */
     public TaskAdapter(List<Task> taskList, OnTaskClickListener listener) {
         if (taskList != null) {
             this.taskList = new ArrayList<>(taskList);
@@ -37,6 +50,10 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
         this.listener = listener;
     }
 
+    /**
+     * Cập nhật danh sách task và làm mới giao diện.
+     * @param tasks Danh sách Task mới
+     */
     public void setData(List<Task> tasks) {
         if (tasks == null) {
             this.taskList = new ArrayList<>();
@@ -46,12 +63,23 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
         notifyDataSetChanged();
     }
 
+    /**
+     * Cho phép hoặc không cho phép đánh dấu hoàn thành task.
+     * @param canToggle true để cho phép, false để vô hiệu hóa
+     */
     public void setCanToggleComplete(boolean canToggle) {
         this.canToggleComplete = canToggle;
     }
 
+    /**
+     * Trả về danh sách các task đang được chọn trong chế độ multi-select.
+     * @return List<Task> đã chọn
+     */
     public List<Task> getSelectedTasks() { return new ArrayList<>(selectedTasks); }
     
+    /**
+     * Xóa toàn bộ selection và thoát chế độ multi-select.
+     */
     public void clearSelection() {
         selectedTasks.clear();
         isMultiSelectMode = false;
@@ -59,11 +87,20 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
         if (listener != null) listener.onSelectionChanged(0);
     }
 
+    /**
+     * Bắt đầu chế độ chọn nhiều task (multi-select mode).
+     */
     public void startMultiSelect() {
         isMultiSelectMode = true;
         notifyDataSetChanged();
     }
 
+    /**
+     * Tạo ViewHolder mới bằng cách inflate layout item_task.
+     * @param parent ViewGroup cha
+     * @param viewType Loại view (không sử dụng)
+     * @return TaskViewHolder mới
+     */
     @NonNull
     @Override
     public TaskViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -71,6 +108,13 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
         return new TaskViewHolder(view);
     }
 
+    /**
+     * Gắn dữ liệu Task vào ViewHolder.
+     * Hiển thị tên, mô tả, hạn chót, checkbox hoàn thành,
+     * và xử lý chế độ multi-select.
+     * @param holder ViewHolder cần gắn dữ liệu
+     * @param position Vị trí trong danh sách
+     */
     @Override
     public void onBindViewHolder(@NonNull TaskViewHolder holder, int position) {
         Task task = taskList.get(position);
@@ -117,6 +161,11 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
         });
     }
 
+    /**
+     * Chuyển đổi trạng thái chọn/bỏ chọn của một task.
+     * Cập nhật UI và thông báo cho listener về số lượng đã chọn.
+     * @param task Task cần toggle selection
+     */
     private void toggleSelection(Task task) {
         if (selectedTasks.contains(task)) {
             selectedTasks.remove(task);
@@ -128,11 +177,19 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
         if (selectedTasks.isEmpty()) isMultiSelectMode = false;
     }
 
+    /**
+     * Trả về tổng số task trong danh sách.
+     * @return Số lượng Task
+     */
     @Override
     public int getItemCount() {
         return taskList.size();
     }
 
+    /**
+     * ViewHolder chứa các thành phần UI của một item task.
+     * Bao gồm: tên, mô tả, ngày hết hạn, checkbox hoàn thành, indicator chọn.
+     */
     static class TaskViewHolder extends RecyclerView.ViewHolder {
         TextView tvName, tvDesc, tvDate;
         ImageView ivCheckbox, ivSelected;

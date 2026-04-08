@@ -5,7 +5,6 @@
     android:layout_height="match_parent"
     android:background="?attr/themeBgDark">
 
-    <!-- Toolbar -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/toolbarContacts"
         android:layout_width="match_parent"
@@ -37,114 +36,261 @@
             app:layout_constraintTop_toTopOf="parent" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <!-- My Number -->
-    <TextView
-        android:id="@+id/tvMyNumber"
+    <LinearLayout
+        android:id="@+id/layoutTabs"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginHorizontal="@dimen/spacing_l"
-        android:layout_marginTop="@dimen/spacing_s"
-        android:text="Số của máy này: Đang lấy..."
-        android:textColor="?attr/themeTextWhite"
-        android:textSize="14sp"
-        android:textStyle="bold"
-        app:layout_constraintTop_toBottomOf="@id/toolbarContacts" />
+        android:orientation="horizontal"
+        android:paddingHorizontal="@dimen/spacing_l"
+        android:paddingTop="@dimen/spacing_s"
+        app:layout_constraintTop_toBottomOf="@id/toolbarContacts">
 
-    <!-- Search Bar -->
-    <EditText
-        android:id="@+id/etSearchContacts"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/button_height_default"
-        android:layout_marginHorizontal="@dimen/spacing_l"
-        android:layout_marginTop="@dimen/spacing_s"
-        android:background="@drawable/btn_outline"
-        android:drawableStart="@android:drawable/ic_menu_search"
-        android:drawablePadding="@dimen/spacing_s"
-        android:drawableTint="?attr/themeTextSecondary"
-        android:hint="@string/search_contacts"
-        android:inputType="text"
-        android:paddingHorizontal="@dimen/spacing_m"
-        android:textColor="?attr/themeTextWhite"
-        android:textColorHint="?attr/themeTextSecondary"
-        android:textSize="14sp"
-        app:layout_constraintTop_toBottomOf="@id/tvMyNumber" />
-
-    <!-- Manual Entry -->
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/layoutManual"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="@dimen/spacing_l"
-        android:layout_marginTop="@dimen/spacing_m"
-        android:background="@drawable/btn_outline"
-        android:paddingHorizontal="@dimen/spacing_m"
-        android:paddingVertical="@dimen/spacing_s"
-        app:layout_constraintTop_toBottomOf="@id/etSearchContacts">
-
-        <EditText
-            android:id="@+id/etManualPhone"
+        <Button
+            android:id="@+id/btnTabContacts"
+            style="@style/Widget.Material3.Button.TonalButton"
             android:layout_width="0dp"
-            android:layout_height="48dp"
-            android:background="@null"
-            android:hint="Nhập số tự do để gọi/nhắn..."
-            android:inputType="phone"
-            android:textColor="?attr/themeTextWhite"
-            android:textColorHint="?attr/themeTextSecondary"
-            android:textSize="14sp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/btnManualCall"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginEnd="@dimen/spacing_xs"
+            android:text="Danh bạ"
+            android:textSize="14sp" />
 
-        <ImageView
-            android:id="@+id/btnManualCall"
-            android:layout_width="36dp"
-            android:layout_height="36dp"
-            android:layout_marginEnd="@dimen/spacing_m"
-            android:background="@drawable/item_circle_bg"
-            android:backgroundTint="@color/green_call"
-            android:padding="8dp"
-            android:src="@android:drawable/sym_action_call"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/btnManualSms"
-            app:layout_constraintTop_toTopOf="parent"
-            app:tint="?attr/themeTextWhite" />
+        <Button
+            android:id="@+id/btnTabSms"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginHorizontal="@dimen/spacing_xs"
+            android:text="Tin nhắn"
+            android:textSize="14sp" />
 
-        <ImageView
-            android:id="@+id/btnManualSms"
-            android:layout_width="36dp"
-            android:layout_height="36dp"
-            android:background="@drawable/item_circle_bg"
-            android:backgroundTint="@color/orange_sms"
-            android:padding="8dp"
-            android:src="@android:drawable/sym_action_email"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:tint="?attr/themeTextWhite" />
-    </androidx.constraintlayout.widget.ConstraintLayout>
+        <Button
+            android:id="@+id/btnTabCallLog"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="@dimen/spacing_xs"
+            android:text="Cuộc gọi"
+            android:textSize="14sp" />
+    </LinearLayout>
 
-    <!-- Contact List -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rvContacts"
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_marginTop="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/layoutManual" />
+        app:layout_constraintTop_toBottomOf="@id/layoutTabs">
 
-    <!-- Empty State -->
-    <TextView
-        android:id="@+id/tvEmptyContacts"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/no_contacts"
-        android:textColor="?attr/themeTextSecondary"
-        android:textSize="16sp"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/layoutManual" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tvMyNumber"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="@dimen/spacing_l"
+                android:layout_marginTop="@dimen/spacing_s"
+                android:text="Số của máy này: Đang lấy..."
+                android:textColor="?attr/themeTextWhite"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <EditText
+                android:id="@+id/etSearchContacts"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/button_height_default"
+                android:layout_marginHorizontal="@dimen/spacing_l"
+                android:layout_marginTop="@dimen/spacing_s"
+                android:background="@drawable/btn_outline"
+                android:drawableStart="@android:drawable/ic_menu_search"
+                android:drawablePadding="@dimen/spacing_s"
+                android:drawableTint="?attr/themeTextSecondary"
+                android:hint="@string/search_contacts"
+                android:inputType="text"
+                android:paddingHorizontal="@dimen/spacing_m"
+                android:textColor="?attr/themeTextWhite"
+                android:textColorHint="?attr/themeTextSecondary"
+                android:textSize="14sp" />
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/layoutManual"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="@dimen/spacing_l"
+                android:layout_marginTop="@dimen/spacing_m"
+                android:background="@drawable/btn_outline"
+                android:paddingHorizontal="@dimen/spacing_m"
+                android:paddingVertical="@dimen/spacing_s">
+
+                <EditText
+                    android:id="@+id/etManualPhone"
+                    android:layout_width="0dp"
+                    android:layout_height="48dp"
+                    android:background="@null"
+                    android:hint="Nhập số tự do..."
+                    android:inputType="phone"
+                    android:textColor="?attr/themeTextWhite"
+                    android:textColorHint="?attr/themeTextSecondary"
+                    android:textSize="14sp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@id/btnManualCall"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <ImageView
+                    android:id="@+id/btnManualCall"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:layout_marginEnd="@dimen/spacing_m"
+                    android:background="@drawable/item_circle_bg"
+                    android:backgroundTint="@color/green_call"
+                    android:padding="8dp"
+                    android:src="@android:drawable/sym_action_call"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@id/btnManualSms"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:tint="?attr/themeTextWhite" />
+
+                <ImageView
+                    android:id="@+id/btnManualSms"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:background="@drawable/item_circle_bg"
+                    android:backgroundTint="@color/orange_sms"
+                    android:padding="8dp"
+                    android:src="@android:drawable/sym_action_email"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:tint="?attr/themeTextWhite" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <TextView
+                android:id="@+id/tvContactsSectionTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="@dimen/spacing_l"
+                android:layout_marginTop="@dimen/spacing_m"
+                android:text="Danh bạ"
+                android:textColor="?attr/themeTextWhite"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvContacts"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:minHeight="200dp"
+                android:nestedScrollingEnabled="false" />
+
+            <TextView
+                android:id="@+id/tvEmptyContacts"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/spacing_l"
+                android:gravity="center"
+                android:text="@string/no_contacts"
+                android:textColor="?attr/themeTextSecondary"
+                android:textSize="16sp"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/tvSmsSectionTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="@dimen/spacing_l"
+                android:layout_marginTop="@dimen/spacing_m"
+                android:text="Tin nhắn"
+                android:textColor="?attr/themeTextWhite"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvSmsList"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:minHeight="200dp"
+                android:nestedScrollingEnabled="false" />
+
+            <TextView
+                android:id="@+id/tvEmptySms"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/spacing_l"
+                android:gravity="center"
+                android:text="Không có tin nhắn\nCần quyền READ_SMS"
+                android:textColor="?attr/themeTextSecondary"
+                android:textSize="14sp"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/tvCallLogSectionTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="@dimen/spacing_l"
+                android:layout_marginTop="@dimen/spacing_m"
+                android:text="Cuộc gọi"
+                android:textColor="?attr/themeTextWhite"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvCallLogList"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:minHeight="200dp"
+                android:nestedScrollingEnabled="false" />
+
+            <TextView
+                android:id="@+id/tvEmptyCallLog"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/spacing_l"
+                android:gravity="center"
+                android:text="Không có lịch sử\nCần quyền READ_CALL_LOG"
+                android:textColor="?attr/themeTextSecondary"
+                android:textSize="14sp"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/tvSmsReceivedTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="@dimen/spacing_l"
+                android:layout_marginTop="@dimen/spacing_l"
+                android:background="?attr/colorPrimary"
+                android:padding="@dimen/spacing_m"
+                android:text="Tin nhắn (Receiver)"
+                android:textColor="?attr/themeTextWhite"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvReceivedSms"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:minHeight="150dp"
+                android:nestedScrollingEnabled="false" />
+
+            <TextView
+                android:id="@+id/tvNoSms"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/spacing_l"
+                android:gravity="center"
+                android:text="Chưa có tin nhắn"
+                android:textColor="?attr/themeTextSecondary"
+                android:textSize="14sp"
+                android:visibility="visible" />
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

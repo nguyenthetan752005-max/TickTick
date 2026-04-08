@@ -5,7 +5,8 @@ public enum ThemeType {
     SUMMER("Mùa hè"),
     HELL("Địa ngục"),
     WINTER("Mùa đông"),
-    NEON("Neon");
+    NEON("Neon"),
+    CUSTOM("Tùy chỉnh");
 
     private final String displayName;
 

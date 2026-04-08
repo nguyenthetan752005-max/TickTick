@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout 
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="@dimen/spacing_m"
+    android:background="?attr/selectableItemBackground">
+
+    <!-- Call type icon -->
+    <ImageView
+        android:id="@+id/ivCallType"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:padding="8dp"
+        android:background="@drawable/item_circle_bg"
+        android:backgroundTint="?attr/themeCardDark"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:tint="?attr/themeTextSecondary" />
+
+    <!-- Contact name -->
+    <TextView
+        android:id="@+id/tvContactName"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/spacing_m"
+        android:layout_marginEnd="@dimen/spacing_s"
+        android:textColor="?attr/themeTextWhite"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:maxLines="1"
+        android:ellipsize="end"
+        app:layout_constraintStart_toEndOf="@id/ivCallType"
+        app:layout_constraintEnd_toStartOf="@id/tvCallTime"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- Call time -->
+    <TextView
+        android:id="@+id/tvCallTime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="?attr/themeTextSecondary"
+        android:textSize="12sp"
+        app:layout_constraintEnd_toStartOf="@id/btnCall"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginEnd="@dimen/spacing_m" />
+
+    <!-- Phone number -->
+    <TextView
+        android:id="@+id/tvPhoneNumber"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/spacing_m"
+        android:layout_marginTop="@dimen/spacing_xs"
+        android:textColor="?attr/themeTextSecondary"
+        android:textSize="14sp"
+        app:layout_constraintStart_toEndOf="@id/ivCallType"
+        app:layout_constraintEnd_toStartOf="@id/tvCallDuration"
+        app:layout_constraintTop_toBottomOf="@id/tvContactName" />
+
+    <!-- Call duration -->
+    <TextView
+        android:id="@+id/tvCallDuration"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/spacing_s"
+        android:textColor="?attr/themeTextSecondary"
+        android:textSize="12sp"
+        app:layout_constraintStart_toEndOf="@id/tvPhoneNumber"
+        app:layout_constraintEnd_toStartOf="@id/btnCall"
+        app:layout_constraintTop_toTopOf="@id/tvPhoneNumber"
+        android:layout_marginEnd="@dimen/spacing_m" />
+
+    <!-- Call button -->
+    <ImageView
+        android:id="@+id/btnCall"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:background="@drawable/item_circle_bg"
+        android:backgroundTint="@color/green_call"
+        android:padding="8dp"
+        android:src="@android:drawable/sym_action_call"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:tint="?attr/themeTextWhite" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -4,6 +4,7 @@
     <attr name="themeBgDark" format="color" />
     <attr name="themeNavBg" format="color" />
     <attr name="themeCardDark" format="color" />
+    <attr name="themeCardBg" format="color" />
     <attr name="themeSurfaceElevated" format="color" />
     
     <attr name="themePrimary" format="color" />
